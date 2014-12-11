@@ -27,4 +27,4 @@ DRTracker.lua
 LoseControl.lua
 AuraTracker.lua
 ComboPoints.lua
-TrinketCd.lua
+TrinketICd.lua

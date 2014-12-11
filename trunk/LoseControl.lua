@@ -21,18 +21,11 @@ function LoseControl:OnInitialize()
 	self:SetEnabledState(db.enabled)
 	self.options=self:GetOptions()
 	SKG:RegisterModuleOptions("LoseControl",self.options,"L LoseControl")
-	self:RegisterEvent("PLAYER_LOGIN")
-end
-function LoseControl:PLAYER_LOGIN()
-	self:Enable()
 end
 
 -- LOSE CONTROL
 
-function LoseControl:ApplySettings()
-end
-
-function LoseControl:Enable()
+function LoseControl:OnEnable()
 
 -- Raid Portrait
 for i=1,10 do
@@ -178,6 +171,10 @@ for unitPortrait,unitID in pairs(port) do
     end
 end
 
+end
+function LoseControl:OnDisable()
+end
+function LoseControl:ApplySettings()
 end
 
 -- OPTIONS

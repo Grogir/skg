@@ -21,18 +21,11 @@ function DigitalCd:OnInitialize()
 	self:SetEnabledState(db.enabled)
 	self.options=self:GetOptions()
 	SKG:RegisterModuleOptions("DigitalCd",self.options,"L DigitalCd")
-	self:RegisterEvent("PLAYER_LOGIN")
-end
-function DigitalCd:PLAYER_LOGIN()
-	self:Enable()
 end
 
 -- DIGITAL COOLDOWNS
 
-function DigitalCd:ApplySettings()
-end
-
-function DigitalCd:Enable()
+function DigitalCd:OnEnable()
 
 dcd=CreateFrame("FRAME")
 actions={}
@@ -130,6 +123,10 @@ for i,button in pairs(ActionBarButtonEventsFrame.frames) do
 	dcd:AddAction(button.action,button.cooldown)
 end
 
+end
+function DigitalCd:OnDisable()
+end
+function DigitalCd:ApplySettings()
 end
 
 -- OPTIONS

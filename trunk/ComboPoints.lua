@@ -121,7 +121,7 @@ local function setter(info,value)
 end
 function ComboPoints:GetOptions()
 	return {
-		order=9999,
+		order=9,
 		type="group",
 		name="ComboPoints",
 		desc="ComboPoints",
