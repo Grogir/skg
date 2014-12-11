@@ -20,18 +20,11 @@ function DRTracker:OnInitialize()
 	self:SetEnabledState(db.enabled)
 	self.options=self:GetOptions()
 	SKG:RegisterModuleOptions("DRTracker",self.options,"L DRTracker")
-	self:RegisterEvent("PLAYER_LOGIN")
-end
-function DRTracker:PLAYER_LOGIN()
-	self:Enable()
 end
 
 -- DR TRACKER
 
-function DRTracker:ApplySettings()
-end
-
-function DRTracker:Enable()
+function DRTracker:OnEnable()
 
 SpellDatabase={--[127538]="stun",[768]="stun",[774]="fear",[5217]="stun",[17]="stun",-- debug
 [2637]="disorient",[3355]="disorient",[19386]="disorient",[118]="disorient",[28272]="disorient",[28271]="disorient",[61305]="disorient",[61025]="disorient",[61721]="disorient",[61780]="disorient",[82691]="disorient",[115078]="disorient",[20066]="disorient",[9484]="disorient",[1776]="disorient",[6770]="disorient",[51514]="disorient",[107079]="disorient",[30217]="disorient",[67769]="disorient",[30216]="disorient",
@@ -129,6 +122,10 @@ function drt:Layout(unit)
 	end
 end
 
+end
+function DRTracker:OnDisable()
+end
+function DRTracker:ApplySettings()
 end
 
 -- OPTIONS

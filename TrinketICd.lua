@@ -31,6 +31,24 @@ TrinketICd.trinkets={
 -- T16
 [104476]={duration=115,proc=146308},
 [102302]={duration=85,proc=148896},
+-- S1
+[115160]={duration=50,proc=126700},
+[119937]={duration=50,proc=126700},
+[115760]={duration=50,proc=126700},
+[111233]={duration=50,proc=126700},
+[115155]={duration=50,proc=126705},
+[119932]={duration=50,proc=126705},
+[115755]={duration=50,proc=126705},
+[111228]={duration=50,proc=126705},
+[115150]={duration=50,proc=126707},
+[119927]={duration=50,proc=126707},
+[115750]={duration=50,proc=126707},
+[111223]={duration=50,proc=126707},
+-- T17
+[112317]={duration=115,proc=162913},
+[112318]={duration=115,proc=162915},
+[112319]={duration=115,proc=162917},
+[112320]={duration=115,proc=162919},
 }
 TrinketICd.procs={}
 
@@ -133,7 +151,7 @@ local function setter(info,value)
 end
 function TrinketICd:GetOptions()
 	return {
-		order=9999,
+		order=10,
 		type="group",
 		name="Trinket Cd",
 		desc="Shows trinket's internal cooldowns",

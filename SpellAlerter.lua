@@ -20,18 +20,11 @@ function SpellAlerter:OnInitialize()
 	self:SetEnabledState(db.enabled)
 	self.options=self:GetOptions()
 	SKG:RegisterModuleOptions("SpellAlerter",self.options,"L SpellAlerter")
-	self:RegisterEvent("PLAYER_LOGIN")
-end
-function SpellAlerter:PLAYER_LOGIN()
-	self:Enable()
 end
 
 -- SPELL ALERTER
 
-function SpellAlerter:ApplySettings()
-end
-
-function SpellAlerter:Enable()
+function SpellAlerter:OnEnable()
 
 local COMBATLOG_TARGET=COMBATLOG_OBJECT_TARGET --DEBUG
 local COMBATLOG_FRIENDLY=COMBATLOG_OBJECT_REACTION_FRIENDLY --DEBUG
@@ -95,6 +88,10 @@ function SAOnUpdate()
 	end
 end
 
+end
+function SpellAlerter:OnDisable()
+end
+function SpellAlerter:ApplySettings()
 end
 
 -- OPTIONS

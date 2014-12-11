@@ -26,15 +26,16 @@ function SimpleTracker:OnInitialize()
 	self:SetEnabledState(db.enabled)
 	self.options=self:GetOptions()
 	SKG:RegisterModuleOptions("SimpleTracker",self.options,"L SimpleTracker")
-	self:RegisterEvent("PLAYER_LOGIN")
-end
-function SimpleTracker:PLAYER_LOGIN()
-	self:Trinket()
-	self:Dispel()
 end
 
 -- TRINKET TRACKER
 
+function SimpleTracker:OnEnable()
+	self:Trinket()
+	self:Dispel()
+end
+function SimpleTracker:OnDisable()
+end
 function SimpleTracker:ApplySettings()
 	for i=1,5 do
 		local arena=_G["ArenaEnemyFrame"..i]
@@ -46,6 +47,8 @@ function SimpleTracker:ApplySettings()
 		arena.dispel:SetSize(db.dispelsize,db.dispelsize)
 	end
 end
+
+-- TRINKET
 
 function SimpleTracker:Trinket()
 
@@ -90,7 +93,7 @@ function SimpleTracker:Trinket()
 	
 end
 
--- DISPEL TRACKER
+-- DISPEL
 
 function SimpleTracker:Dispel()
 
