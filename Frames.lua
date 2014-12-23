@@ -59,6 +59,14 @@ local defaults={global={
 	partyscale=1.5,
 	partytextsize=8,
 	
+	bossx=-260,
+	bossy=-120,
+	bossspace=75,
+	bossscale=1.0,
+	bosscastx=10,
+	bosscasty=28,
+	bosscastscale=1.0,
+	
 	hideart=true,
 	disabledamage=true,
 	disablewhisp=true,
@@ -74,6 +82,7 @@ local defaults={global={
 }}
 local arenatest=false
 local partytest=false
+local bosstest=false
 
 function Frames:OnInitialize()
 	self.db=SKG.db:RegisterNamespace("Frames",defaults,true)
@@ -255,6 +264,29 @@ function Frames:UnitFrames()
 			-- SetPortraitToTexture(party.portrait,"Interface\\Icons\\Spell_Nature_HealingTouch") -- Debug
 		else
 			party:Hide()
+		end
+	end
+	
+	-- Boss frames
+	for i=1,5 do
+		local boss=_G["Boss"..i.."TargetFrame"]
+		boss:SetScale(db.bossscale)
+		boss:ClearAllPoints()
+		if not boss.SetPointNew then
+			boss.SetPointNew=boss.SetPoint
+			boss.SetPoint=EmptyFunc
+		end
+		boss:SetPointNew("TOPRIGHT",MinimapCluster,"BOTTOMRIGHT",db.bossx,db.bossy-(i-1)*db.bossspace)
+		boss.spellbar:ClearAllPoints()
+		boss.spellbar:SetPoint("TOPLEFT",boss,"BOTTOMLEFT",db.bosscastx,db.bosscasty)
+		boss.spellbar:SetScale(db.bosscastscale)
+		if bosstest then
+			boss:Show()
+			boss.spellbar:Show()
+			boss.spellbar:SetAlpha(0.3)
+			boss.spellbar.fadeOut=nil
+		else
+			boss:Hide()
 		end
 	end
 end
@@ -554,7 +586,7 @@ function Frames:GetOptions()
 			reset={
 				type="execute",
 				name="Reset settings",
-				func=function() SG:ResetOptions(Frames.options.args,db,defaults.global) self:ApplySettings() end,
+				func=function() SKG:ResetOptions(Frames.options.args,db,defaults.global) self:ApplySettings() end,
 				order=0,
 			},
 			playertargets={
@@ -570,13 +602,13 @@ function Frames:GetOptions()
 					playerx={
 						type="range",
 						name="X",
-						min=-1000,max=1000,step=1,bigStep=20,
+						softMin=-1000,softMax=1000,step=1,bigStep=20,
 						order=1
 					},
 					playery={
 						type="range",
 						name="Y",
-						min=-600,max=600,step=1,bigStep=20,
+						softMin=-600,softMax=600,step=1,bigStep=20,
 						order=2
 					},
 					playerscale={
@@ -593,13 +625,13 @@ function Frames:GetOptions()
 					targetx={
 						type="range",
 						name="X",
-						min=-1000,max=1000,step=1,bigStep=20,
+						softMin=-1000,softMax=1000,step=1,bigStep=20,
 						order=11
 					},
 					targety={
 						type="range",
 						name="Y",
-						min=-600,max=600,step=1,bigStep=20,
+						softMin=-600,softMax=600,step=1,bigStep=20,
 						order=12
 					},
 					targetscale={
@@ -616,13 +648,13 @@ function Frames:GetOptions()
 					focusx={
 						type="range",
 						name="X",
-						min=-1000,max=1000,step=1,bigStep=20,
+						softMin=-1000,softMax=1000,step=1,bigStep=20,
 						order=21
 					},
 					focusy={
 						type="range",
 						name="Y",
-						min=-600,max=600,step=1,bigStep=20,
+						softMin=-600,softMax=600,step=1,bigStep=20,
 						order=22
 					},
 					focusscale={
@@ -639,13 +671,13 @@ function Frames:GetOptions()
 					targettargetx={
 						type="range",
 						name="X",
-						min=-150,max=150,step=1,bigStep=5,
+						softMin=-150,softMax=150,step=1,bigStep=5,
 						order=31
 					},
 					targettargety={
 						type="range",
 						name="Y",
-						min=-100,max=100,step=1,bigStep=5,
+						softMin=-100,softMax=100,step=1,bigStep=5,
 						order=32
 					},
 					focustarget={
@@ -656,45 +688,17 @@ function Frames:GetOptions()
 					focustargetx={
 						type="range",
 						name="X",
-						min=-150,max=150,step=1,bigStep=5,
+						softMin=-150,softMax=150,step=1,bigStep=5,
 						order=41
 					},
 					focustargety={
 						type="range",
 						name="Y",
-						min=-100,max=100,step=1,bigStep=5,
+						softMin=-100,softMax=100,step=1,bigStep=5,
 						order=42
 					},
 				}
 			},
-			-- target={
-				-- type="group",
-				-- name="Target",
-				-- order=2,
-				-- args={
-				-- }
-			-- },
-			-- focus={
-				-- type="group",
-				-- name="Focus",
-				-- order=3,
-				-- args={
-				-- }
-			-- },
-			-- targettarget={
-				-- type="group",
-				-- name="Target of target",
-				-- order=4,
-				-- args={
-				-- }
-			-- },
-			-- focustarget={
-				-- type="group",
-				-- name="Focustarget",
-				-- order=5,
-				-- args={
-				-- }
-			-- },
 			resource={
 				type="group",
 				name="Resources - Pets",
@@ -708,13 +712,13 @@ function Frames:GetOptions()
 					runeframex={
 						type="range",
 						name="X",
-						min=-100,max=100,step=1,bigStep=1,
+						softMin=-100,softMax=100,step=1,bigStep=1,
 						order=1
 					},
 					runeframey={
 						type="range",
 						name="Y",
-						min=-100,max=100,step=1,bigStep=1,
+						softMin=-100,softMax=100,step=1,bigStep=1,
 						order=2
 					},
 					runeframescale={
@@ -731,13 +735,13 @@ function Frames:GetOptions()
 					petframex={
 						type="range",
 						name="X",
-						min=-200,max=200,step=1,bigStep=1,
+						softMin=-200,softMax=200,step=1,bigStep=1,
 						order=11
 					},
 					petframey={
 						type="range",
 						name="Y",
-						min=-200,max=200,step=1,bigStep=1,
+						softMin=-200,softMax=200,step=1,bigStep=1,
 						order=12
 					},
 					totemframe={
@@ -748,13 +752,13 @@ function Frames:GetOptions()
 					totemframex={
 						type="range",
 						name="X",
-						min=-200,max=200,step=1,bigStep=1,
+						softMin=-200,softMax=200,step=1,bigStep=1,
 						order=21
 					},
 					totemframey={
 						type="range",
 						name="Y",
-						min=-200,max=200,step=1,bigStep=1,
+						softMin=-200,softMax=200,step=1,bigStep=1,
 						order=22
 					},
 				}
@@ -786,13 +790,13 @@ function Frames:GetOptions()
 					arenax={
 						type="range",
 						name="Base X",
-						min=-1000,max=1000,step=1,bigStep=10,
+						softMin=-1000,softMax=1000,step=1,bigStep=10,
 						order=1
 					},
 					arenay={
 						type="range",
 						name="Base Y",
-						min=-600,max=600,step=1,bigStep=10,
+						softMin=-600,softMax=600,step=1,bigStep=10,
 						order=2
 					},
 					arenascale={
@@ -804,7 +808,7 @@ function Frames:GetOptions()
 					arenaspace={
 						type="range",
 						name="Space",
-						min=-100,max=100,step=1,bigStep=5,
+						softMin=-150,softMax=150,step=1,bigStep=5,
 						order=4
 					},
 					arenatexture={
@@ -828,13 +832,13 @@ function Frames:GetOptions()
 					arenacastx={
 						type="range",
 						name="X",
-						min=-100,max=100,step=1,bigStep=1,
+						softMin=-100,softMax=100,step=1,bigStep=1,
 						order=11
 					},
 					arenacasty={
 						type="range",
 						name="Y",
-						min=-100,max=100,step=1,bigStep=1,
+						softMin=-100,softMax=100,step=1,bigStep=1,
 						order=12
 					},
 					arenacastscale={
@@ -851,13 +855,13 @@ function Frames:GetOptions()
 					arenanamex={
 						type="range",
 						name="X",
-						min=-100,max=100,step=1,bigStep=1,
+						softMin=-100,softMax=100,step=1,bigStep=1,
 						order=21
 					},
 					arenanamey={
 						type="range",
 						name="Y",
-						min=-100,max=100,step=1,bigStep=1,
+						softMin=-100,softMax=100,step=1,bigStep=1,
 						order=22
 					},
 					arenanamesize={
@@ -874,13 +878,13 @@ function Frames:GetOptions()
 					arenapetx={
 						type="range",
 						name="X",
-						min=-100,max=100,step=1,bigStep=1,
+						softMin=-100,softMax=100,step=1,bigStep=1,
 						order=31
 					},
 					arenapety={
 						type="range",
 						name="Y",
-						min=-100,max=100,step=1,bigStep=1,
+						softMin=-100,softMax=100,step=1,bigStep=1,
 						order=32
 					},
 				}
@@ -898,13 +902,13 @@ function Frames:GetOptions()
 					partyx={
 						type="range",
 						name="X",
-						min=-1000,max=1000,step=1,bigStep=10,
+						softMin=-1000,softMax=1000,step=1,bigStep=10,
 						order=1
 					},
 					partyy={
 						type="range",
 						name="Y",
-						min=-600,max=600,step=1,bigStep=10,
+						softMin=-600,softMax=600,step=1,bigStep=10,
 						order=2
 					},
 					partyscale={
@@ -916,7 +920,7 @@ function Frames:GetOptions()
 					partyspace={
 						type="range",
 						name="Space",
-						min=-100,max=100,step=1,bigStep=5,
+						softMin=-150,softMax=150,step=1,bigStep=5,
 						order=4
 					},
 					partytextsize={
@@ -934,10 +938,82 @@ function Frames:GetOptions()
 					},
 				}
 			},
+			boss={
+				type="group",
+				name="Boss",
+				order=11,
+				args={
+					bossframes={
+						type="header",
+						name="Boss Frames",
+						order=0
+					},
+					bossx={
+						type="range",
+						name="X",
+						softMin=-1000,softMax=1000,step=1,bigStep=10,
+						order=1
+					},
+					bossy={
+						type="range",
+						name="Y",
+						softMin=-600,softMax=600,step=1,bigStep=10,
+						order=2
+					},
+					bossscale={
+						type="range",
+						name="Scale",
+						min=0,max=3.0,step=0.01,bigStep=0.1,
+						order=3
+					},
+					bossspace={
+						type="range",
+						name="Space",
+						softMin=-150,softMax=150,step=1,bigStep=5,
+						order=4
+					},
+					-- bosstextsize={
+						-- type="range",
+						-- name="Text Size",
+						-- min=1,max=16,step=1,bigStep=1,
+						-- order=5
+					-- },
+					bosstest={
+						type="toggle",
+						name="Test",
+						get=function() return bosstest end,
+						set=function(i,v) bosstest=v self:ApplySettings() end,
+						order=6
+					},
+					bosscast={
+						type="header",
+						name="Cast Bar",
+						order=10
+					},
+					bosscastx={
+						type="range",
+						name="X",
+						softMin=-100,softMax=100,step=1,bigStep=1,
+						order=11
+					},
+					bosscasty={
+						type="range",
+						name="Y",
+						softMin=-100,softMax=100,step=1,bigStep=1,
+						order=12
+					},
+					bosscastscale={
+						type="range",
+						name="Scale",
+						min=0,max=3.0,step=0.01,bigStep=0.1,
+						order=13
+					},
+				}
+			},
 			misc={
 				type="group",
 				name="Misc",
-				order=11,
+				order=20,
 				args={
 					hideart={
 						type="toggle",
@@ -978,13 +1054,13 @@ function Frames:GetOptions()
 					frameratex={
 						type="range",
 						name="X",
-						min=-1000,max=1000,step=1,bigStep=10,
+						softMin=-1000,softMax=1000,step=1,bigStep=10,
 						order=11
 					},
 					frameratey={
 						type="range",
 						name="Y",
-						min=-600,max=600,step=1,bigStep=5,
+						softMin=-600,softMax=600,step=1,bigStep=5,
 						order=12
 					},
 					eab={
@@ -995,13 +1071,13 @@ function Frames:GetOptions()
 					eabx={
 						type="range",
 						name="X",
-						min=-1000,max=1000,step=1,bigStep=5,
+						softMin=-1000,softMax=1000,step=1,bigStep=5,
 						order=21
 					},
 					eaby={
 						type="range",
 						name="Y",
-						min=-600,max=600,step=1,bigStep=5,
+						softMin=-600,softMax=600,step=1,bigStep=5,
 						order=22
 					},
 					powerbaralt={
@@ -1012,13 +1088,13 @@ function Frames:GetOptions()
 					powerbaraltx={
 						type="range",
 						name="X",
-						min=-1000,max=1000,step=1,bigStep=5,
+						softMin=-1000,softMax=1000,step=1,bigStep=5,
 						order=31
 					},
 					powerbaralty={
 						type="range",
 						name="Y",
-						min=-600,max=600,step=1,bigStep=5,
+						softMin=-600,softMax=600,step=1,bigStep=5,
 						order=32
 					},
 				}
