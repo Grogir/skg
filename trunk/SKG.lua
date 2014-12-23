@@ -258,9 +258,9 @@ function snapshot:Calc()
 	local mult=1
 	if UnitBuff("player","Fureur du tigre") then mult=mult*1.15 end
 	if UnitBuff("player","Rugissement sauvage") then mult=mult*1.4 end
-	if UnitBuff("player","Griffes de sang") or snapshot.removed[145152]==GetTime() then mult=mult*1.3 end
+	if UnitBuff("player","Griffes de sang") or GetTime()-snapshot.removed[145152]<0.05 then mult=mult*1.3 end
 	local rakemult=1
-	if UnitBuff("player","Incarnation : Roi de la jungle") or UnitBuff("player","Rôder") or snapshot.removed[5215]==GetTime() or UnitBuff("player","Camouflage dans l'ombre") or snapshot.removed[58984]==GetTime() then rakemult=2 end
+	if UnitBuff("player","Incarnation : Roi de la jungle") or UnitBuff("player","Rôder") or GetTime()-snapshot.removed[5215]<0.05 or UnitBuff("player","Camouflage dans l'ombre") or GetTime()-snapshot.removed[58984]<0.05 then rakemult=2 end
 	
 	snapshot.cache[1079].value=cp/5*mult
 	snapshot.cache[1079].valueget=mult
