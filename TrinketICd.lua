@@ -45,6 +45,7 @@ TrinketICd.trinkets={
 [115750]={duration=50,proc=126707},
 [111223]={duration=50,proc=126707},
 -- T17
+[109262]={duration=55,proc=60233},
 [112317]={duration=115,proc=162913},
 [112318]={duration=115,proc=162915},
 [112319]={duration=115,proc=162917},

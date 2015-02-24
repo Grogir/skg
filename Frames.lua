@@ -5,13 +5,11 @@
 -- by Florian "Khujara" FALAVEL & Pierre-Yves "Grogir" DUTREUILH
 --
 --------------------------------------------------
--- taint dk pet frame -- valable wod ??
--- taint objets de quete
+-- boss cast marche pas
 
 local AddonName,SKG=...
 local Frames=SKG:NewModule("Frames","AceEvent-3.0")
 local db
--- _G.SGF=Frames
 
 local defaults={global={
 	enabled=true,
@@ -79,6 +77,9 @@ local defaults={global={
 	eaby=-335,
 	powerbaraltx=0,
 	powerbaralty=-335,
+	containerx=0,
+	containery=10,
+	objtrackerx=10,
 }}
 local arenatest=false
 local partytest=false
@@ -100,7 +101,6 @@ function Frames:ApplySettings()
 	self:UnitFrames()
 	self:Misc()
 end
-local function EmptyFunc() end
 
 -- FRAMES
 
@@ -136,7 +136,7 @@ function Frames:UnitFrames()
 		if db.runeframescale>0 then RuneFrame:SetScale(db.runeframescale) end
 		TotemFrame:ClearAllPoints()
 		TotemFrame:SetPoint("TOPLEFT",PlayerFrame,"TOPLEFT",db.totemframex,db.totemframey)
-		TotemFrame.SetPoint=EmptyFunc
+		TotemFrame.SetPoint=nop
 		PetFrame:ClearAllPoints()
 		PetFrame:SetPoint("TOPLEFT",PlayerFrame,"TOPLEFT",db.petframex,db.petframey)
 	end
@@ -162,7 +162,7 @@ function Frames:UnitFrames()
 			if db.arenascale>0 then frame:SetScale(db.arenascale) end
 			if not frame.SetPointNew then
 				frame.SetPointNew=frame.SetPoint
-				frame.SetPoint=EmptyFunc
+				frame.SetPoint=nop
 			end
 			frame:SetPointNew("CENTER",UIParent,"CENTER",db.arenax,db.arenay-(i-1)*db.arenaspace)
 			frame:SetUserPlaced(true)
@@ -178,27 +178,21 @@ function Frames:UnitFrames()
 				
 				portrait:SetSize(40,40)
 				pt,rel,relpt,x,y=portrait:GetPoint()
-				portrait:SetPoint(pt,rel,relpt,3,6)
-				-- portrait:SetPoint(pt,rel,relpt,x+14,y+10)
+				portrait:SetPoint(pt,rel,relpt,3,6) -- x+14,y+10
 			
 				pt,rel,relpt,x,y=back:GetPoint()
-				back:SetPoint(pt,rel,relpt,2,0)
-				-- back:SetPoint(pt,rel,relpt,x,y+10)
+				back:SetPoint(pt,rel,relpt,2,0) -- x,y+10
 				back:SetHeight(25)
 				
 				pt,rel,relpt,x,y=spec:GetPoint()
-				spec:SetPoint(pt,rel,relpt,5,-1)
-				-- spec:SetPoint(pt,rel,relpt,x+5,y-5)
+				spec:SetPoint(pt,rel,relpt,5,-1) -- x+5,y-5
 				pt,rel,relpt,x,y=specportrait:GetPoint()
-				specportrait:SetPoint(pt,rel,relpt,9,-5)
-				-- specportrait:SetPoint(pt,rel,relpt,x+7,y-7)
+				specportrait:SetPoint(pt,rel,relpt,9,-5) -- x+7,y-7
 				
 				x,y=healthbar:GetSize()
-				healthbar:SetSize(71,7)
-				-- healthbar:SetSize(x+1,y-1)
+				healthbar:SetSize(71,7) -- x+1,y-1
 				x,y=manabar:GetSize()
-				manabar:SetSize(71,5)
-				-- manabar:SetSize(x+1,y-3)
+				manabar:SetSize(71,5) -- x+1,y-3
 				healthbartext:SetFont("Fonts\\FRIZQT__.TTF",8,"OUTLINE")
 				healthbartext:SetPoint("CENTER",healthbar)
 				manabartext:SetFont("Fonts\\FRIZQT__.TTF",8,"OUTLINE")
@@ -256,12 +250,11 @@ function Frames:UnitFrames()
 		
 		if partytest then
 			party:Show()
-			hbf(party,100) -- Debug
-			party.name:SetText(PlayerName:GetText()) -- Debug
-			local tex=CLASS_ICON_TCOORDS[select(2,UnitClass("player"))] --Debug
+			hbf(party,100)
+			party.name:SetText(PlayerName:GetText())
+			local tex=CLASS_ICON_TCOORDS[select(2,UnitClass("player"))]
 			party.portrait:SetTexture("Interface\\TargetingFrame\\UI-Classes-Circles")
-			party.portrait:SetTexCoord(unpack(tex)) --Debug
-			-- SetPortraitToTexture(party.portrait,"Interface\\Icons\\Spell_Nature_HealingTouch") -- Debug
+			party.portrait:SetTexCoord(unpack(tex))
 		else
 			party:Hide()
 		end
@@ -274,11 +267,15 @@ function Frames:UnitFrames()
 		boss:ClearAllPoints()
 		if not boss.SetPointNew then
 			boss.SetPointNew=boss.SetPoint
-			boss.SetPoint=EmptyFunc
+			boss.SetPoint=nop
 		end
 		boss:SetPointNew("TOPRIGHT",MinimapCluster,"BOTTOMRIGHT",db.bossx,db.bossy-(i-1)*db.bossspace)
 		boss.spellbar:ClearAllPoints()
-		boss.spellbar:SetPoint("TOPLEFT",boss,"BOTTOMLEFT",db.bosscastx,db.bosscasty)
+		if not boss.spellbar.SetPointNew then
+			boss.spellbar.SetPointNew=boss.spellbar.SetPoint
+			boss.spellbar.SetPoint=nop
+		end
+		boss.spellbar:SetPointNew("TOPLEFT",boss,"BOTTOMLEFT",db.bosscastx,db.bosscasty)
 		boss.spellbar:SetScale(db.bosscastscale)
 		if bosstest then
 			boss:Show()
@@ -307,8 +304,8 @@ function Frames:Misc()
 		PetHitIndicator.ShowNew=PetHitIndicator.Show
 	end
 	if db.disabledamage then
-		PlayerHitIndicator.Show=EmptyFunc
-		PetHitIndicator.Show=EmptyFunc
+		PlayerHitIndicator.Show=nop
+		PetHitIndicator.Show=nop
 	else
 		PlayerHitIndicator.Show=PlayerHitIndicator.ShowNew
 		PetHitIndicator.Show=PetHitIndicator.ShowNew
@@ -319,7 +316,7 @@ function Frames:Misc()
 		FCF_StartAlertFlashNew=FCF_StartAlertFlash
 	end
 	if db.disablewhisp then
-		FCF_StartAlertFlash=EmptyFunc
+		FCF_StartAlertFlash=nop
 	else
 		FCF_StartAlertFlash=FCF_StartAlertFlashNew
 	end
@@ -332,16 +329,23 @@ function Frames:Misc()
 	FramerateLabel:ClearAllPoints()
 	FramerateLabel:SetPoint("CENTER",UIParent,"CENTER",db.frameratex,db.frameratey)
 
+	-- Extra Action
 	ExtraActionBarFrame:ClearAllPoints()
 	ExtraActionBarFrame:SetPoint("CENTER",UIParent,"CENTER",db.eabx,db.eaby)
 	ExtraActionBarFrame.ignoreFramePositionManager=true
-	-- PlayerPowerBarAltCounterBar:ClearAllPoints()
-	-- PlayerPowerBarAltCounterBar:SetPoint("CENTER",UIParent,"CENTER",0,-335)
+	-- /run ExtraActionBarFrame:Show() ExtraActionButton1:Show() ExtraActionButton1.style:SetTexture("Interface\\ExtraButton\\Default") ExtraActionBarFrame.outro:Stop() ExtraActionBarFrame.intro:Play()
+	
+	-- Power Bar Alt
 	PlayerPowerBarAlt:ClearAllPoints()
 	PlayerPowerBarAlt:SetPoint("CENTER",UIParent,"CENTER",db.powerbaraltx,db.powerbaralty)
 	PlayerPowerBarAlt.ignoreFramePositionManager=true
-	UIPARENT_MANAGED_FRAME_POSITIONS.OBJTRACKER_OFFSET_X.baseX=30
-	UIPARENT_MANAGED_FRAME_POSITIONS.CONTAINER_OFFSET_Y.yOffset=-20
+	-- /run PlayerPowerBarAlt:Show() PlayerPowerBarAlt:SetSize(256,64) PlayerPowerBarAlt.frame:SetTexture("Interface/UnitPowerBarAlt/Fire_Horizontal_Frame")
+	
+	-- FramePositionManager
+	-- provoque taint dans UIParent et ContainerFrame
+	UIPARENT_MANAGED_FRAME_POSITIONS.CONTAINER_OFFSET_X.baseX=db.containerx
+	UIPARENT_MANAGED_FRAME_POSITIONS.CONTAINER_OFFSET_Y.yOffset=db.containery
+	UIPARENT_MANAGED_FRAME_POSITIONS.OBJTRACKER_OFFSET_X.baseX=db.objtrackerx
 
 	-- Minimap Tweaks
 	if db.minimaptweaks then
@@ -388,162 +392,6 @@ end
 		-- end
 	-- end
 -- end)
-
-function arbre(f,str) -- /run print(arbre(ArenaEnemyFrame1))
-	if not str then str="" end
-	t={f:GetRegions()}
-	for a,b in pairs(t) do
-		name=b:GetName()
-		if name then str=str..b:GetName().." ; " else str=str.."nil ; " end
-	end
-	t={f:GetChildren()}
-	for a,b in pairs(t) do
-		name=b:GetName()
-		if name then str=str..b:GetName() else str=str.."nil" end
-		if b:GetNumRegions() or b:GetNumChildren() then
-			str=str.." { "
-			str=arbre(b,str)
-			str=str.."} "
-		else
-			 str=str.." ; "
-		end
-	end
-	return str
-end
-function arbretex(f,str) -- /run print(arbretex(MainMenuBar))
-	if not str then str="" end
-	t={f:GetRegions()}
-	for a,b in pairs(t) do
-		if b:GetObjectType()=="Texture" then
-			str=str..(b:GetName() or "name").." "..(b:GetTexture() or "tex").." ; "
-		end
-	end
-	t={f:GetChildren()}
-	for a,b in pairs(t) do
-		if b:GetNumRegions() or b:GetNumChildren() then
-			str=arbretex(b,str)
-		end
-	end
-	return str
-end
-darktextures={
-["arenaenemyframe\\ui-arenatargetingframe"]=1,
-["auctionframe"]=1,
-["bankframe"]=1,
--- ["buttons"]=1,
-["characterframe\\totemborder"]=1,
-["characterframe\\ui-characterframe-groupindicator"]=1,
-["characterframe\\ui-deathknightframe"]=1,
-["characterframe\\ui-player-portrait"]=1,
-["dialogframe\\dialogframe-bot"]=1,
-["dialogframe\\dialogframe-corners"]=1,
-["dialogframe\\dialogframe-left"]=1,
-["dialogframe\\dialogframe-right"]=1,
-["dialogframe\\dialogframe-top"]=1,
-["dialogframe\\ui-dialogbox-border"]=1,
-["dialogframe\\ui-dialogbox-corner"]=1,
-["dialogframe\\ui-dialogbox-divider"]=1,
-["dialogframe\\ui-dialogbox-header"]=1,
-["durability"]=1,
-["framegeneral"]=1,
-["groupframe\\ui-group-portrait"]=1,
-["lootframe\\ui-lootpanel"]=1,
-["mainmenubar\\ui-mainmenubar-dwarf"]=1,
-["mainmenubar\\ui-mainmenubar-endcap-dwarf"]=1,
-["mainmenubar\\ui-mainmenubar-endcap-human"]=1,
-["mainmenubar\\ui-mainmenubar-human"]=1,
-["mainmenubar\\ui-mainmenubar-keyring"]=1,
-["mainmenubar\\ui-mainmenubar-maxlevel"]=1,
-["mainmenubar\\ui-mainmenubar-nightelf"]=1,
-["mainmenubar\\ui-xp-bar"]=1,
-["mainmenubar\\ui-xp-mid"]=1,
--- ["merchantframe"]=1,
-["minimap\\ui-minimap-border"]=1,
-["minimap\\minimap-trackingborder"]=1,
-["paperdoll"]=1,
-["paperdollinfoframe"]=1,--
-["petactionbar"]=1,
-["petpaperdollframe\\ui-petframe-slots"]=1,
-["petpaperdollframe\\ui-petframe-slots-companions"]=1,
-["petpaperdollframe\\ui-petframe-slots-mounts"]=1,
-["petpaperdollframe\\ui-petpaperdollframe-botleft"]=1,
-["petpaperdollframe\\ui-petpaperdollframe-botright"]=1,
-["petstableframe"]=1,
-["playerframe\\ui-playerframe-deathknight"]=1,
-["playerframe\\ui-playerframe-deathknight-background"]=1,
-["playerframe\\ui-playerframe-deathknight-ring"]=1,
-["pvpframe\\silvericonborder"]=1,
-["pvpframe\\ui-character-pvp"]=1,
-["pvpframe\\ui-character-pvp-elements"]=1,
--- ["questframe"]=1,
--- ["raidframe"]=1,
-["shapeshiftbar"]=1,
-["targetingframe\\numericthreatborder"]=1,
-["targetingframe\\ui-focusframe-large"]=1,
-["targetingframe\\ui-focustargetingframe"]=1,
-["targetingframe\\ui-partyframe"]=1,
-["targetingframe\\ui-smalltargetingframe"]=1,
-["targetingframe\\ui-smalltargetingframe-nomana"]=1,
-["targetingframe\\ui-targetingframe"]=1,
-["targetingframe\\ui-targetingframe-minus"]=1,
--- ["targetingframe\\ui-targetingframe-elite"]=1,
-["targetingframe\\ui-targetingframe-nolevel"]=1,
-["targetingframe\\ui-targetingframe-nomana"]=1,
-["targetingframe\\ui-targetingframe-plusmob"]=1,
--- ["targetingframe\\ui-targetingframe-rare"]=1,
--- ["targetingframe\\ui-targetingframe-rare-elite"]=1,
-["targetingframe\\ui-targetingframe-raremob"]=1,
-["targetingframe\\ui-targetoftargetframe"]=1,
-["taxiframe\\ui-taxiframe-botleft"]=1,
-["taxiframe\\ui-taxiframe-botright"]=1,
-["taxiframe\\ui-taxiframe-topleft"]=1,
-["taxiframe\\ui-taxiframe-topright"]=1,
--- ["timemanager"]=1,
-["tooltips\\nameplate-border"]=1,
-["tooltips\\nameplate-castbar"]=1,
-["tooltips\\nameplate-castbar-shield"]=1,
-["tooltips\\ui-statusbar-border"]=1,
--- ["tooltips\\ui-tooltip-b"]=1,--...
-["tradeframe\\ui-tradeframe-botleft"]=1,
-["tradeframe\\ui-tradeframe-botright"]=1,
-["tradeframe\\ui-tradeframe-enchanticon"]=1,
-["tradeframe\\ui-tradeframe-topleft"]=1,
-["tradeframe\\ui-tradeframe-topright"]=1,
-["tradeframe\\scaleddown"]=1,--
-["tradeskillframe"]=1,
-["vehicles\\seatindicator"]=1,
-["vehicles\\ui-vehicle-frame"]=1,
-["vehicles\\ui-vehicle-frame-alliance"]=1,
-["vehicles\\ui-vehicle-frame-border"]=1,
-["vehicles\\ui-vehicle-frame-organic"]=1,
-["vehicles\\ui-vehicles-partyframe"]=1,
-["vehicles\\ui-vehicles-partyframe-organic"]=1,
--- ["worldstateframe"]=1,
-}
-function checktex(f) -- /run checktex()
-	if not f then f=UIParent end
-	t={f:GetRegions()}
-	for a,b in pairs(t) do
-		if b:GetObjectType()=="Texture" then
-			local texname=b:GetTexture()
-			if texname then
-				texname=texname:lower()
-				local full=texname:match("interface\\(.+)")
-				local folder=texname:match("interface\\(.+)\\")
-				if darktextures[full] or darktextures[folder] then
-					b:SetVertexColor(0.1,0.1,0.1)
-					print("colored "..(b:GetName() or "tex"))
-				end
-			end
-		end
-	end
-	t={f:GetChildren()}
-	for a,b in pairs(t) do
-		if not b:IsForbidden() and (b:GetNumRegions() or b:GetNumChildren()) then
-			checktex(b)
-		end
-	end
-end
 
 hbf=function(f,n)
 	f.healthbar:SetMinMaxValues(0,100);
@@ -1096,6 +944,34 @@ function Frames:GetOptions()
 						name="Y",
 						softMin=-600,softMax=600,step=1,bigStep=5,
 						order=32
+					},
+					container={
+						type="header",
+						name="Bags",
+						order=40
+					},
+					containerx={
+						type="range",
+						name="X",
+						softMin=-500,softMax=500,step=1,bigStep=5,
+						order=41
+					},
+					containery={
+						type="range",
+						name="Y",
+						softMin=-500,softMax=500,step=1,bigStep=5,
+						order=42
+					},
+					other={
+						type="header",
+						name="",
+						order=50
+					},
+					objtrackerx={
+						type="range",
+						name="Objectives X",
+						softMin=-500,softMax=500,step=1,bigStep=5,
+						order=51
 					},
 				}
 			},

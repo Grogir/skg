@@ -196,7 +196,7 @@ end
 function AuraTracker:Cache(unit)
 	self.cache[unit]={}
 	local cache=self.cache[unit]
-	local i,id,count,dur,expi,auth=0,0
+	local i,id,count,dur,expi,auth,_=0,0
 	while id do
 		i=i+1
 		_,_,_,count,_,dur,expi,auth,_,_,id=UnitBuff(unit,i)
