@@ -96,7 +96,7 @@ hooksecurefunc("CompactRaidFrameContainer_LayoutFrames",ShowRaidPortrait)
 
 -- Lose control
 port={PlayerPortrait="player",TargetFramePortrait="target",FocusFramePortrait="focus",PartyMemberFrame1Portrait="party1",PartyMemberFrame2Portrait="party2",PartyMemberFrame3Portrait="party3",PartyMemberFrame4Portrait="party4",ArenaEnemyFrame1ClassPortrait="arena1",ArenaEnemyFrame2ClassPortrait="arena2",ArenaEnemyFrame3ClassPortrait="arena3",ArenaEnemyFrame4ClassPortrait="arena4",ArenaEnemyFrame5ClassPortrait="arena5",RaidMember1Portrait="raid1",RaidMember2Portrait="raid2",RaidMember3Portrait="raid3",RaidMember4Portrait="raid4",RaidMember5Portrait="raid5",RaidMember6Portrait="raid6",RaidMember7Portrait="raid7",RaidMember8Portrait="raid8",RaidMember9Portrait="raid9",RaidMember10Portrait="raid10"}
-prc={playerbuff=1,buff=1,debuff=2,root=3,rndroot=3,disarm=4,nodr=4,def=5,aoe=5,aura=6,silence=6,stun=7,fear=7,disorient=7,rndstun=7,horror=7,cyclone=7,scatter=7,mc=7,banish=7,immune=8}
+prc={playerbuff=1,buff=1,debuff=2,root=3,rndroot=3,nodr=4,def=5,aura=6,silence=6,stun=7,rndstun=7,fear=7,sheep=7}
 psize={player=56,target=56,focus=56,party1=36,party2=36,party3=36,party4=36,arena1=36,arena2=36,arena3=36,arena4=36,arena5=36,raid1=56,raid2=56,raid3=56,raid4=56,raid5=56,raid6=56,raid7=56,raid8=56,raid9=56,raid10=56}
 ptex={RaidMember1Portrait=1,RaidMember2Portrait=1,RaidMember3Portrait=1,RaidMember4Portrait=1,RaidMember5Portrait=1,RaidMember6Portrait=1,RaidMember7Portrait=1,RaidMember8Portrait=1,RaidMember9Portrait=1,RaidMember10Portrait=1}
 function CheckAura(unit,AuraFunc,icon,prio,expi,dur)

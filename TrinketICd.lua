@@ -50,6 +50,9 @@ TrinketICd.trinkets={
 [112318]={duration=115,proc=162915},
 [112319]={duration=115,proc=162917},
 [112320]={duration=115,proc=162919},
+-- S2
+[124857]={duration=50,proc=190026},
+-- T18
 }
 TrinketICd.procs={}
 

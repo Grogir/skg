@@ -26,18 +26,176 @@ end
 
 function DRTracker:OnEnable()
 
-SpellDatabase={--[127538]="stun",[768]="stun",[774]="fear",[5217]="stun",[17]="stun",-- debug
-[2637]="disorient",[3355]="disorient",[19386]="disorient",[118]="disorient",[28272]="disorient",[28271]="disorient",[61305]="disorient",[61025]="disorient",[61721]="disorient",[61780]="disorient",[82691]="disorient",[115078]="disorient",[20066]="disorient",[9484]="disorient",[1776]="disorient",[6770]="disorient",[51514]="disorient",[107079]="disorient",[30217]="disorient",[67769]="disorient",[30216]="disorient",
-[47476]="silence",[78675]="silence",[34490]="silence",[55021]="silence",[102051]="silence",[116709]="silence",[31935]="silence",[15487]="silence",[1330]="silence",[24259]="silence",[115782]="silence",[18498]="silence",[25046]="silence",[28730]="silence",[50613]="silence",[69179]="silence",[80483]="silence",[129597]="silence",[114238]="silence",[137460]="silence",
-[91644]="disarm",[50541]="disarm",[117368]="disarm",[126458]="disarm",[64058]="disarm",[51722]="disarm",[118093]="disarm",[676]="disarm",[137461]="disarm",
-[1513]="fear",[10326]="fear",[8122]="fear",[113792]="fear",[2094]="fear",[118699]="fear",[5484]="fear",[6358]="fear",[115268]="fear",[104045]="fear",[5246]="fear",[20511]="fear",[105421]="fear",[113004]="fear",[113056]="fear",[130616]="fear",[145067]="fear",
-[108194]="stun",[91800]="stun",[91797]="stun",[22570]="stun",[9005]="stun",[102546]="stun",[5211]="stun",[102795]="stun",[127361]="stun",[113801]="stun",[24394]="stun",[90337]="stun",--[[[50519]="stun",]][117526]="stun",[44572]="stun",[118271]="stun",[119392]="stun",[119381]="stun",[122242]="stun",[126451]="stun",[120086]="stun",[853]="stun",[119072]="stun",[105593]="stun",[1833]="stun",[408]="stun",[118905]="stun",[30283]="stun",[89766]="stun",[132168]="stun",[20549]="stun",[107570]="stun",[46968]="stun",[115001]="stun",[47481]="stun",[110698]="stun",[132169]="stun",[126246]="stun",[105771]="stun",[126423]="stun",[126355]="stun",[96201]="stun",[115752]="stun",[118345]="stun",
-[96294]="root",[339]="root",[19975]="root",[102359]="root",[50245]="root",[4167]="root",[54706]="root",[90327]="root",[128405]="root",[122]="root",[33395]="root",[116706]="root",[114404]="root",[63685]="root",[107566]="root",[113275]="root",[110693]="root",[136634]="root",[53148]="root",[113770]="root",[87194]="root",[115197]="root",
-[22703]="rndstun",[113953]="rndstun",[77505]="rndstun",[7922]="rndstun",[118895]="rndstun",[64044]="horror",[6789]="horror",[87204]="horror",[137143]="horror",[33786]="cyclone",[113506]="cyclone",[99]="scatter",[19503]="scatter",[31661]="scatter",[123393]="scatter",[605]="mc",[76780]="banish",[710]="banish",[45334]="rndroot",[64803]="rndroot",[111340]="rndroot",[64695]="rndroot",[91807]="rndroot",[115757]="rndroot",[123407]="rndroot",[31117]="nodr",[56626]="nodr",[88625]="nodr",[81261]="nodr",[133901]="nodr",
-[29166]="buff",[54428]="buff",[22812]="buff",[113075]="buff",[102342]="buff",[114029]="buff",[3411]="buff",[122292]="buff",[8178]="buff",[89523]="buff",[88611]="buff",[106922]="buff",[113072]="buff",[120954]="buff",[126456]="buff",[5277]="buff",[110791]="buff",[113613]="buff",[62606]="buff",[122286]="buff",[118038]="buff",[108271]="buff",[108359]="buff",[108416]="buff",[23920]="buff",[114028]="buff",[113002]="buff",[122783]="buff",[115760]="buff",[49039]="buff",[49016]="buff",[31821]="aura",[96267]="aura",[131558]="aura",[124488]="aura",
-[30823]="def",[1022]="def",[498]="def",[33206]="def",[115018]="def",[61336]="def",[113306]="def",[871]="def",[48707]="def",[110570]="def",[31224]="def",[110788]="def",[19263]="def",[148467]="def",[110617]="def",[74001]="def",[48792]="def",[110575]="def",[47585]="def",[110715]="def",[104773]="def",[122291]="def",[110913]="def",[131523]="def",[125174]="def",
-[45438]="immune",[110696]="immune",[642]="immune",[110700]="immune"}
-driconsize=25 drduration=19 drtimeout=28
+SpellDatabase={
+[33786]="fear", --Cyclone
+[31661]="fear", --Souffle du dragon
+[105421]="fear", --Lumière aveuglante
+[10326]="fear", --Renvoi du mal
+[145067]="fear", --Renvoi du mal
+[8122]="fear", --Cri psychique
+[2094]="fear", --Cécité
+[130616]="fear", --Peur
+[118699]="fear", --Peur
+[5484]="fear", --Hurlement de terreur
+[115268]="fear", --Envoûtement
+[6358]="fear", --Séduction
+[5246]="fear", --Cri d’intimidation
+
+[99]="sheep", --Rugissement incapacitant
+[3355]="sheep", --Piège givrant
+[19386]="sheep", --Piqûre de wyverne
+[61025]="sheep", --Métamorphose
+[118]="sheep", --Métamorphose
+[61305]="sheep", --Métamorphose
+[61721]="sheep", --Métamorphose
+[28271]="sheep", --Métamorphose
+[28272]="sheep", --Métamorphose
+[61780]="sheep", --Métamorphose
+[82691]="sheep", --Anneau de givre
+[123393]="sheep", --Souffle de feu
+[115078]="sheep", --Paralysie
+[137460]="sheep", --Réduit au silence --A TEST
+[20066]="sheep", --Repentir
+[9484]="sheep", --Entraves des morts-vivants
+[88625]="sheep", --Mot sacré : Châtier
+[64044]="sheep", --Horreur psychique
+[605]="sheep", --Emprise
+[1776]="sheep", --Suriner
+[6770]="sheep", --Assommer
+[51514]="sheep", --Maléfice
+[710]="sheep", --Bannir
+[137143]="sheep", --Horreur sanglante
+[6789]="sheep", --Voile de mort
+[107079]="sheep", --Paume vibratoire
+[30216]="sheep", --Bombe en gangrefer
+[30217]="sheep", --Grenade en adamantite
+[67769]="sheep", --Bombe à fragmentation en cobalt
+
+[96294]="root", --Chaînes de glace
+[339]="root", --Sarments
+[113770]="root", --Sarments
+[102359]="root", --Enchevêtrement de masse
+[53148]="root", --Charge
+[64803]="root", --Piège
+[136634]="root", --Chas de l’aiguille
+--[128405]="root", --Chas de l’aiguille
+[122]="root", --Nova de givre
+[115757]="root", --Nova de givre
+[33395]="root", --Gel
+[111340]="root", --Garde glaciale
+[116706]="root", --Handicap
+[114404]="root", --Etreinte de la vrille du Vide
+[64695]="root", --Poigne de terre
+[63685]="root", --Puissance gelée
+
+[47476]="silence", --Strangulation
+[81261]="silence", --Rayon solaire
+[78675]="silence", --Rayon solaire
+[102051]="silence", --Givregueule
+[31935]="silence", --Bouclier du vengeur
+[15487]="silence", --Silence
+[1330]="silence", --Garrot - Silence
+
+[91800]="stun", --Ronger
+--[47481]="stun", --Ronger
+[91797]="stun", --Coup monstrueux
+[108194]="stun", --Asphyxier
+[115001]="stun", --Hiver impitoyable
+[22570]="stun", --Estropier
+[163505]="stun", --Griffure
+[5211]="stun", --Rossée puissante
+[117526]="stun", --Tir de lien
+[24394]="stun", --Intimidation
+[44572]="stun", --Congélation
+[119392]="stun", --Onde de la charge du buffle
+[120086]="stun", --Poings de fureur
+[119381]="stun", --Balayement de jambe
+[105593]="stun", --Poing de la justice
+[853]="stun", --Marteau de la justice
+[119072]="stun", --Colère divine
+[1833]="stun", --Coup bas
+[408]="stun", --Aiguillon perfide
+[118905]="stun", --Charge statique
+[118345]="stun", --Pulvérisation
+[89766]="stun", --Lancer de hache
+[171017]="stun", --Frappe météore --A TEST
+[171018]="stun", --Frappe météore --A TEST
+[30283]="stun", --Furie de l’ombre
+[132168]="stun", --Onde de choc
+--[46968]="stun", --Onde de choc
+[132169]="stun", --Eclair de tempête
+--[107570]="stun", --Eclair de tempête
+
+--A TEST
+[105771]="rndroot", --Charge
+[87194]="rndroot", --Glyphe d’attaque mentale
+[107566]="rndroot", --Cri ahurissant --obsolete?
+[45334]="rndroot", --Immobilisé
+[91807]="rndroot", --Ruée titubante
+[114238]="silence", --Silence des lucioles
+[80483]="silence", --Torrent arcanique
+[25046]="silence", --Torrent arcanique
+[50613]="silence", --Torrent arcanique
+[28730]="silence", --Torrent arcanique
+[129597]="silence", --Torrent arcanique
+[69179]="silence", --Torrent arcanique
+[18498]="silence", --Réduit au silence - Imposition du silence
+[20549]="rndstun", --Choc martial
+[113801]="rndstun", --Sonner --obsolete?
+[118895]="rndstun", --Rugissement de dragon
+[77505]="rndstun", --Séisme
+[22703]="rndstun", --Eveil de l'infernal
+[7922]="rndstun", --Porteguerre
+[87204]="nodr", --Péché et punition
+[31117]="nodr", --Affliction instable
+
+[88611]="buff", --Bombe fumigène
+[122783]="buff", --Diffusion de la magie
+[89523]="buff", --Totem de glèbe
+[8178]="buff", --Effet du Totem de glèbe
+[23920]="buff", --Renvoi de sort
+[115760]="buff", --Glyphe de bloc de glace
+[108416]="buff", --Pacte sacrificiel
+[108359]="buff", --Sombre régénération
+[5277]="buff", --Evasion
+[118038]="buff", --Par le fil de l’épée
+[62606]="buff", --Défense sauvage
+[102342]="buff", --Ecorcefer
+[108271]="buff", --Transfert astral
+[120954]="buff", --Boisson fortifiante
+[3411]="buff", --Intervention
+[22812]="buff", --Ecorce
+[114028]="buff", --Renvoi de sort de masse
+[114029]="buff", --Protéger
+[49039]="buff", --Changeliche
+
+[124488]="aura", --Focalisation zen
+[31821]="aura", --Aura de dévotion
+[131558]="aura", --Egide de marcheur des esprits
+-- priest ?
+-- drood ?
+
+[871]="def", --Mur protecteur
+[125174]="def", --Toucher du karma
+[19263]="def", --Dissuasion
+[48707]="def", --Carapace anti-magie
+[104773]="def", --Résolution interminable
+[74001]="def", --Promptitude au combat
+[110913]="def", --Sombre marché
+[148467]="def", --Dissuasion
+[31224]="def", --Cape d'ombre
+[61336]="def", --Instincts de survie
+[115018]="def", --Terre profanée
+[33206]="def", --Suppression de la douleur
+[498]="def", --Protection divine
+[1022]="def", --Main de protection
+[47585]="def", --Dispersion
+[30823]="def", --Rage du chaman
+[48792]="def", --Robustesse glaciale
+[45438]="def", --Bloc de glace
+[642]="def" --Bouclier divin
+}
+driconsize=25 drduration=18 drtimeout=28
 drdebuff="DEBUFF" -- BUFF pour debug
 drignore={rndroot=1,nodr=1,buff=1,aura=1,def=1,immune=1,playerbuff=1}
 drt=CreateFrame("FRAME")

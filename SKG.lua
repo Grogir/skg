@@ -169,29 +169,29 @@ end)
 -- NAMEPLATES
 
 plates=CreateFrame("Frame")
-plates:RegisterEvent("PLAYER_LOGIN")
-plates:SetScript("OnEvent",function()
-	-- CombatText:SetScale(0.8)
-	WorldFrame:SetScale(0.8)
+plates:RegisterEvent("PLAYER_ENTERING_WORLD")
+plates:SetScript("OnEvent",function(self)
+	if not self.init then
+		self.init=true
+		WorldFrame:SetScale(0.8)
+		hooksecurefunc("CombatText_UpdateDisplayedMessages",function()
+			COMBAT_TEXT_SPACING=COMBAT_TEXT_SPACING*0.8
+			COMBAT_TEXT_MAX_OFFSET=COMBAT_TEXT_MAX_OFFSET*0.8
+			COMBAT_TEXT_LOCATIONS.startY=COMBAT_TEXT_LOCATIONS.startY*0.8
+			COMBAT_TEXT_LOCATIONS.endY=(COMBAT_TEXT_LOCATIONS.endY*0.8+COMBAT_TEXT_LOCATIONS.startY)*0.5
+			CombatText_ClearAnimationList()
+		end)
+		COMBAT_TEXT_SCROLLSPEED=1
+		COMBAT_TEXT_FADEOUT_TIME=0
+	end
 end)
--- /run print(CombatText:GetPoint())
--- /run print(CombatText1:GetPoint())
--- /run print(CombatTextTemplate:GetPoint())
--- plates2=CreateFrame("Frame")
--- plates2:RegisterEvent("PLAYER_ENTERING_WORLD")
--- plates2:SetScript("OnEvent",function()
-	-- a,b,c,d,e=CombatText1:GetPoint()
-	-- CombatText1:SetPoint(a,b,c,d,e-100)
--- end)
-
-bubbles=CreateFrame("Frame")
-bubbles.num=-1
-bubbles.elapsed=0
-bubbles:SetScript("OnUpdate",function(self,elapsed)
-	bubbles.elapsed=bubbles.elapsed+elapsed
-	if WorldFrame:GetNumChildren()~=bubbles.num or bubbles.elapsed>0.1 then
-		bubbles.num=WorldFrame:GetNumChildren()
-		bubbles.elapsed=0
+plates.num=-1
+plates.elapsed=0
+plates:SetScript("OnUpdate",function(self,elapsed)
+	self.elapsed=self.elapsed+elapsed
+	if WorldFrame:GetNumChildren()~=self.num or self.elapsed>0.1 then
+		self.num=WorldFrame:GetNumChildren()
+		self.elapsed=0
 		local t={WorldFrame:GetChildren()}
 		for i,f in pairs(t) do
 			if f:GetBackdrop() and f:GetBackdrop().bgFile=="Interface\\Tooltips\\ChatBubble-Background" then
@@ -247,7 +247,7 @@ local ilvlcheck=CreateFrame("Frame")
 -- ilvlcheck:RegisterEvent("PLAYER_ENTER_COMBAT")
 ilvlcheck:RegisterEvent("PLAYER_REGEN_DISABLED")
 ilvlcheck:SetScript("OnEvent",function()
-	if UnitLevel("player")>=90 then
+	if UnitLevel("player")>=100 then
 	   local limit=GetAverageItemLevel()*0.8
 	   for i=1,17 do
 		  if i~=4 then
@@ -257,7 +257,7 @@ ilvlcheck:SetScript("OnEvent",function()
 				   l=GetInventoryItemLink("player",16)
 				   if l then
 					   local sub,_,t=select(7,GetItemInfo(l))
-					   if t=="INVTYPE_2HWEAPON" or t=="INVTYPE_RANGEDRIGHT" and sub~=select(16,GetAuctionItemSubClasses(1)) then 
+					   if t=="INVTYPE_2HWEAPON" or t=="INVTYPE_RANGED" or t=="INVTYPE_RANGEDRIGHT" and sub~=select(16,GetAuctionItemSubClasses(1)) then 
 						  break
 					   end
 				   end
@@ -265,7 +265,7 @@ ilvlcheck:SetScript("OnEvent",function()
 				print("Warning: No item in slot",i)
 			 else
 				local _,_,_,ilvl=GetItemInfo(l)
-				if ilvl and ilvl<limit then
+				if ilvl and ilvl<limit and not (l:match(":512:22:%d:615:") or l:match(":512:22:%d:692:")) then
 				   print("Warning: Item",l,"is",ilvl,"item level")
 				end
 			 end
