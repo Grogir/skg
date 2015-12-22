@@ -239,10 +239,10 @@ function InterruptBar:GetListForSpec()
 	-- the rest of the function if they're equals otherwise relaunch?(when?)!
 	self.arenalist = {}
 	for EnemyIndex=1, ArenaEnemyCount do
-		local Spec = GetArenaOpponentSpec(EnemyIndex)
-		local _,SpecName,_,_,_,_,ClassName =  GetSpecializationInfoByID(Spec)
+		local SpecID = GetArenaOpponentSpec(EnemyIndex)
+		local _,SpecName,_,_,_,_,ClassName =  GetSpecializationInfoByID(SpecID)
 		local ListCount = 1;
-		for Index, Spells in ipairs(self.list) do3
+		for Index, Spells in ipairs(self.list) do
 			self.arenalist[EnemyIndex] = {}
 			local SpellSpec, SpellClass = IsSpellClassOrSpec(Spells[1])
 			if(SpellSpec == nil) then
