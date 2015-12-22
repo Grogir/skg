@@ -51,7 +51,7 @@ local Defaults={global={
 		{61336,180 }, -- Survival Instincts
 		{50334,180 }, -- Berserk
 	-- Hunter --------------------------------
-		{1499,20}, -- Freezing Trap -- TODO(flo): 20 or 30 secs cooldown ?
+		{1499,30}, -- Freezing Trap -- TODO(flo): split spec ? (20 secs for survival hunter)
 		{19263,180 }, -- Deterrence
 		{19386,45}, -- Wyvern Sting
 		{19574,60}, -- Bestial Wrath
@@ -169,6 +169,7 @@ function InterruptBar:ApplySettings()
 end
 
 function InterruptBar:OnEnable()
+	_G.InterruptBarDebug = self
 	self.framelist = {}
 	self.list = Database.list
 	for Index, Spell in ipairs(Database.list) do
@@ -192,6 +193,7 @@ function InterruptBar:OnDisable()
 	end
 	self.framelist = {}
 	self.list = nil
+	_G.InterruptBarDebug = nil
 end
 
 function InterruptBar:Launch()
@@ -231,10 +233,78 @@ function InterruptBar:CreateFrame(Index, SpellId, PosX, PosY)
     return Frame
 end
 
+--Death Knight
+	--250 - Blood
+	--251 - Frost
+	--252 - Unholy
+--Druid
+	--102 - Balance
+	--103 - Feral Combat
+	--104 - Guardian
+	--105 - Restoration
+--Hunter
+	--253 - Beast Mastery
+	--254 - Marksmanship
+	--255 - Survival
+--Mage
+	--62 - Arcane
+	--63 - Fire
+	--64 - Frost
+--Monk
+	--268 - Brewmaster
+	--269 - Windwalker
+	--270 - Mistweaver
+--Paladin
+	--65 - Holy
+	--66 - Protection
+	--70 - Retribution
+--Priest
+	--256 Discipline
+	--257 Holy
+	--258 Shadow
+--Rogue
+--	259 - Assassination
+--	260 - Combat
+--	261 - Subtlety
+--Shaman
+	--262 - Elemental
+	--263 - Enhancement
+	--264 - Restoration
+--Warlock
+	--265 - Affliction
+	--266 - Demonology
+	--267 - Destruction
+--Warrior
+	--71 - Arms
+	--72 - Fury
+	--73 - Protection
+
+function InterruptBar:DEBUGGetListForSpecifiedSpec(SpecID)
+	local _,SpecName,_,_,_,_,ClassName =  GetSpecializationInfoByID(SpecID)
+	print("Spec = " .. SpecName)
+	print("Class = " .. ClassName)
+	for Index, Spells in ipairs(self.list) do
+		local SpellSpecName, SpellClassName = IsSpellClassOrSpec(Spells[1])
+		print("ID = " .. Spells[1] .. " Class = " .. SpellClassName .. " Spec = " .. SpellSpecName)
+		if(SpellSpec == nil) then
+			if(ClassName == SpellClassName) then
+				print(Spells[1] .. ", " .. Spells[2])
+			end
+		else
+			if(ClassName == SpellClass and SpecName == SpellSpec) then
+				print(Spells[1] .. ", " .. Spells[2])
+			end
+		end
+	end
+end
+
 -- TODO(flo) : find a way to call this function and test it!
 function InterruptBar:GetListForSpec()
 	local ArenaEnemyCount = GetNumArenaOpponents()
 	local ArenaEnemySpecKnown = GetNumArenaOpponentSpecs()
+
+	print("Arena Enemy Count" .. ArenaEnemyCount)
+	print("Known Arena Spec" .. ArenaEnemySpecKnow)
 	-- TODO(flo) : compare ArenaEnemyCount and ArenaEnemySpecKnow and launch
 	-- the rest of the function if they're equals otherwise relaunch?(when?)!
 	self.arenalist = {}
