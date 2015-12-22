@@ -6,10 +6,11 @@
 --
 --------------------------------------------------
 
--- TODO(flo) : http://wowprogramming.com/docs/api/GetArenaOpponentSpec
-	-- add hunter/mage/monk/priest/rogue/shaman/warlock spells....
+-- TODO(flo) :
+	-- do i miss some spells ?
 	-- try to implement one line par arena frame, use GetArenaOpponentSpec or UnitAura to set each line
 	-- split arena from battlegrounds/worldmap implementations
+	-- maybe make a file generator that contains all spells from wowdb?
 
 
 local AddonName,SKG=...
@@ -41,17 +42,42 @@ local Defaults={global={
 	-- Druid --------------------------------
 		{78675,60}, -- Solar Beam
 		{106839 ,15}, -- Skull Bash
+		{5211 ,50}, -- Mighty Bash
 		{102359 ,30}, -- Mass Entanglement
 		{99,30}, -- Incapacitating Roar
-		{5211 ,50}, -- Mighty Bash
+		{132158 ,60}, -- Nature's Swiftness
+		{102280,30}, -- Displacer Beast
 		{132469 ,30}, -- Typhoon
 		{61336,180 }, -- Survival Instincts
 		{50334,180 }, -- Berserk
 	-- Hunter --------------------------------
+		{1499,20}, -- Freezing Trap -- TODO(flo): 20 or 30 secs cooldown ?
+		{19263,180 }, -- Deterrence
+		{19386,45}, -- Wyvern Sting
+		{19574,60}, -- Bestial Wrath
+		{131894 ,60}, -- A murder of Crows
 	-- Mage --------------------------------
 		{2139,24}, -- Counterspell
+		{44572,30}, -- Deep Freeze
+		{113724 ,45}, -- Ring of Frost
+		{102051 ,20}, -- Frostjaw
+		{31661,20}, -- Dragon's Breath
+		{66 ,300 }, -- Invisibility
+		{1953 ,15}, -- Blink
+		{11958,180}, -- Cold Snap
+		{12472,180 }, -- Icy Veins
+		{45438,300 }, -- Ice Block
 	-- Monk --------------------------------
 		{116705,15}, -- Spear Hand Strike (kick)
+		{115176 ,180 }, -- Zen Meditation
+		{115203,180 }, -- Fortifying Brew
+		{116844 ,45}, -- Ring of Peace
+		{116849 ,120 }, -- Life Cocoon
+		{119381 ,45}, -- Leg Sweep
+		{119996 ,25}, -- Transcendence Transfer
+		{122470 ,90}, -- Touch of Karma
+		{122783 ,90}, -- Diffuse Magic
+		{137562 ,120 }} -- Nimber Brew
 	-- Paladin --------------------------------
 		{96231,15}, -- Rebuke
 		{853,60}, -- Hammer of Justice
@@ -66,12 +92,51 @@ local Defaults={global={
 		{114039,30}, -- Hand of Purity
 	-- Priest --------------------------------
 		{8122,42}, -- Psychic Scream
-
+		{15487,45}, -- Silence
+		{64044 ,45}, -- Psychic Horror
+		{33206 ,180 }, -- Pain Suppression
+		{47585 ,120 }, -- Dispersion
+		{47788 ,180 }, -- Guardian Spirit
 	-- Rogue --------------------------------
 		{1766,15}, -- Kick
+		{408 ,20}, -- Kidney Shot
+		{1856 ,120 }, -- Vanish
+		{2094 ,120 }, -- Blind
+		{2983 ,60}, -- Sprint
+		{5277 ,180 }, -- Evasion
+		{13750,180 }, -- Adrenaline Rush
+		{14185,300 }, -- Preparation
+		{31224,60}, -- Cloak of Shadows
+		{36554,20}, -- Shadow Step
+		{51713,60}, -- Shadow Dance
+		{74001,120 }, -- Combat Readiness
+		{76577,180 }, -- Smoke Bomb
 	-- Shaman --------------------------------
 		{57994,12}, -- Wind Shear
+		{51490,45}, -- Thunderstorm
+		{51514 ,45}, -- Hex
+		{108269 ,45}, -- Capacitor Totem
+		{8143,60}, -- Tremor Totem
+		{8177,25}, -- Grounding Totem
+		{30823,60}, -- Shamanistic Rage
+		{108271 ,90}, -- Astral Shift
+		{108273 ,60}, -- Windwalk Totem
+		{98008 ,180 }, -- Spirit Link Totem
+		{16188 ,90 }, -- Ancestral Swiftness
+		{108285 ,180 }, -- Call of the Elements
 	-- Warlock --------------------------------
+		{115781 ,24}, -- Optical Blast (Observer)
+		{19647 ,24}, -- Spell Lock (Felhunter)
+		{171138 ,24}, -- Shadow Lock (Doomguard, Terrorguard) NOTE(flo): exists ?
+		{89766,30}, -- Axe Toss (Felguard, Wrathguard)
+		{6358,30}, -- Seduction (Succubus)
+		{115268 ,30}, -- Mesmerize (Shivarra)
+		{115770 ,25}, -- Fellash (Shivarra)
+		{6360,25}, -- Whiplash (Succubus)
+		{48020,26}, -- Demonic Circle : Teleport
+		{113861,120}, -- Dark Souls Demonology
+		{113860,120}, -- Dark Souls Affliction
+		{113858,120}, -- Dark Souls Destruction
 	-- Warrior --------------------------------
 		{6552,15}, -- Pummel
 		{1719 ,180 }, -- Recklessness
@@ -114,6 +179,10 @@ function InterruptBar:OnEnable()
 	end
 	self:Launch()
 	self:RegisterEvent("PLAYER_ENTERING_WORLD", "Event")
+end
+
+function InterruptBar:Event()
+    self:ApplySettings()
 end
 
 function InterruptBar:OnDisable()
@@ -160,6 +229,33 @@ function InterruptBar:CreateFrame(Index, SpellId, PosX, PosY)
     Frame.CD=CreateFrame("Cooldown",nil,Frame)
     Frame.CD:SetAllPoints(Frame)
     return Frame
+end
+
+-- TODO(flo) : find a way for calling this function and testing it!
+function InterruptBar:GetListForSpec()
+	local ArenaEnemyCount = GetNumArenaOpponents()
+	local ArenaEnemySpecKnown = GetNumArenaOpponentSpecs()
+	self.arenalist = {}
+	for EnemyIndex=1, ArenaEnemyCount do
+		local Spec = GetArenaOpponentSpec(EnemyIndex)
+		local _,SpecName,_,_,_,_,ClassName =  GetSpecializationInfoByID(Spec)
+		local ListCount = 1;
+		for Index, Spells in ipairs(self.list) do3
+			self.arenalist[EnemyIndex] = {}
+			local SpellSpec, SpellClass = IsSpellClassOrSpec(Spells[1])
+			if(SpellSpec == nil) then
+				if(ClassName == SpellClass) then
+					self.arenalist[EnemyIndex][ListCount] = {Spells[1], Spells[2]}
+					ListCount = ListCount + 1
+				end
+			else
+				if(ClassName == SpellClass and SpecName == SpellSpec) then
+					self.arenalist[EnemyIndex][ListCount] = {Spells[1], Spells[2]}
+					ListCount = ListCount + 1
+				end
+			end
+		end
+	end
 end
 
 function InterruptBar:UpdateFrame(Frame, SpellId, SpellCD)
