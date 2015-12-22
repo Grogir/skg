@@ -231,7 +231,7 @@ function InterruptBar:CreateFrame(Index, SpellId, PosX, PosY)
     return Frame
 end
 
--- TODO(flo) : find a way for calling this function and testing it!
+-- TODO(flo) : find a way to call this function and test it!
 function InterruptBar:GetListForSpec()
 	local ArenaEnemyCount = GetNumArenaOpponents()
 	local ArenaEnemySpecKnown = GetNumArenaOpponentSpecs()
