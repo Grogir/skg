@@ -168,6 +168,10 @@ function InterruptBar:ApplySettings()
 	self:OnEnable()
 end
 
+function InterruptBar:Event()
+    self:ApplySettings()
+end
+
 function InterruptBar:OnEnable()
 	_G.InterruptBarDebug = self
 	self.framelist = {}
@@ -180,10 +184,6 @@ function InterruptBar:OnEnable()
 	end
 	self:Launch()
 	self:RegisterEvent("PLAYER_ENTERING_WORLD", "Event")
-end
-
-function InterruptBar:Event()
-    self:ApplySettings()
 end
 
 function InterruptBar:OnDisable()
