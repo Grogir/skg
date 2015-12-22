@@ -8,7 +8,7 @@
 
 -- TODO(flo) : http://wowprogramming.com/docs/api/GetArenaOpponentSpec
 	-- add hunter/mage/monk/priest/rogue/shaman/warlock spells....
-	-- try to implement one line par arena frame
+	-- try to implement one line par arena frame, use GetArenaOpponentSpec or UnitAura to set each line
 	-- split arena from battlegrounds/worldmap implementations
 
 
@@ -16,7 +16,7 @@ local AddonName,SKG=...
 local InterruptBar=SKG:NewModule("InterruptBar","AceEvent-3.0")
 local Database
 
-local defaults={global={
+local Defaults={global={
 	enabled=true,
 	fl=1,
 	x=-124,
@@ -89,7 +89,7 @@ local defaults={global={
 }}
 
 function InterruptBar:OnInitialize()
-	self.db=SKG.db:RegisterNamespace("InterruptBar",defaults,true)
+	self.db=SKG.db:RegisterNamespace("InterruptBar",Defaults,true)
 	Database=self.db.global
 	self:SetEnabledState(Database.enabled)
 	self.options=self:GetOptions()
@@ -114,10 +114,6 @@ function InterruptBar:OnEnable()
 	end
 	self:Launch()
 	self:RegisterEvent("PLAYER_ENTERING_WORLD", "Event")
-end
-
-function InterruptBar:Event()
-    self:ApplySettings()
 end
 
 function InterruptBar:OnDisable()
@@ -163,7 +159,7 @@ function InterruptBar:CreateFrame(Index, SpellId, PosX, PosY)
     Frame.Texture:SetTexture(Texture)
     Frame.CD=CreateFrame("Cooldown",nil,Frame)
     Frame.CD:SetAllPoints(Frame)
-    return f
+    return Frame
 end
 
 function InterruptBar:UpdateFrame(Frame, SpellId, SpellCD)
