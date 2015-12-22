@@ -27,7 +27,6 @@
 -- WARLOCK
 -- WARRIOR
 
-
 local AddonName,SKG=...
 local InterruptBar=SKG:NewModule("InterruptBar","AceEvent-3.0")
 local Database
@@ -38,7 +37,8 @@ local Defaults={global={
 	x=-124,
 	y=-50,
 	size=30,
-	line=9,
+	marginx=1,
+	marginy=1,
 	spectoadd=65,
 	list={
 
@@ -90,12 +90,16 @@ local Defaults={global={
 		--255 - Survival
 		{"HUNTER",
 			{
+				{{253, 254, 255}, 147362, 24}, -- Counter Shot
+				{{253, 254}, 60192, 30}, -- Freezing Trap
+				{{255}, 60192, 20}, -- Freezing Trap (Survival)
 				{{253, 254}, 1499, 30}, -- Freezing Trap
 				{{255}, 1499, 20}, -- Freezing Trap (Survival)
 				{{253, 254, 255}, 19263, 180}, -- Deterrence
 				{{253, 254, 255}, 19386, 45}, -- Wyvern Sting
 				{{253, 254, 255}, 19574, 60}, -- Bestial Wrath
-				{{253, 254, 255}, 131894, 60} -- A murder of Crows
+				{{253, 254, 255}, 131894, 60}, -- A murder of Crows
+				{{253, 254, 255}, 19577, 60} -- Intimidation
 			}
 		},
 
@@ -266,23 +270,50 @@ function InterruptBar:OnInitialize()
 	self:SetEnabledState(Database.enabled)
 	self.options=self:GetOptions()
 	SKG:RegisterModuleOptions("InterruptBar",self.options,"L InterruptBar")
+	self:Reset()
 end
 
 -- INTERRUPT BAR
 
+function InterruptBar:GetPosXFromFrameIndex(FrameIndex, X, MarginX, Size)
+	local PosX = X + (Size + MarginX)*math.ceil(FrameIndex-1)
+	return PosX
+end
+
+function InterruptBar:GetPosYFromLineIndex(LineIndex, Y, MarginY, Size)
+	local PosY = Y - (Size + MarginY)*math.ceil(LineIndex)
+	return PosY
+end
+
+function InterruptBar:Move(X, Y, MarginX, MarginY, Size)
+	local LineCount = getn(self.framelist)
+	for LineIndex=1, LineCount do
+		for FrameIndex=1, getn(self.framelist[LineIndex]) do
+			local Frame = self.framelist[LineIndex][FrameIndex]
+			local PosX = self:GetPosXFromFrameIndex(FrameIndex, X, MarginX, Size)
+			local PosY = self:GetPosYFromLineIndex(LineIndex, Y, MarginY, Size)
+			Frame:SetPoint("CENTER", PosX, PosY)
+			Frame:SetSize(Size, Size)
+		end
+	end
+end
+
+
+
 function InterruptBar:ApplySettings()
-	self:OnDisable()
-	self:OnEnable()
+	-- self:OnDisable()
+	self:Move(Database.x, Database.y, Database.marginx, Database.marginy, Database.size)
+	-- self:OnEnable()
 end
 
-function InterruptBar:Event()
-    self:ApplySettings()
+function InterruptBar:Reset()
+	InterruptBar:OnDisable()
+	InterruptBar:OnEnable()
 end
 
-function InterruptBar:CreateFrame(Index, SpellId, PosX, PosY)
+function InterruptBar:CreateFrame(LineIndex, SpellId, CDInSecs, PosX, PosY)
 	local _,_,Texture=GetSpellInfo(SpellId)
 	local Frame=CreateFrame("Frame",nil,UIParent)
-	table.insert(self.framelist, Frame)
 	Frame:SetPoint("CENTER", PosX, PosY)
 	Frame:SetSize(Database.size, Database.size)
 	Frame.Texture=Frame:CreateTexture(nil,"BORDER")
@@ -290,6 +321,8 @@ function InterruptBar:CreateFrame(Index, SpellId, PosX, PosY)
 	Frame.Texture:SetTexture(Texture)
 	Frame.CD=CreateFrame("Cooldown",nil,Frame)
 	Frame.CD:SetAllPoints(Frame)
+	Frame.CDInSecs = CDInSecs
+	Frame.SpellID = SpellID
 	return Frame
 end
 
@@ -297,110 +330,22 @@ function InterruptBar:OnEnable()
 	_G.ibDEBUG = self
 	self.framelist = {}
 	self.list = Database.list
-	local Index = 1
-	for ClassIndex, ClassList in ipairs(Database.list) do
-		for SpellIndex, Spell in ipairs(ClassList[2]) do
-			self:CreateFrame(Index, Spell[2],
-				Database.x+(Database.size+1)*math.ceil((Index-1)%Database.line),
-				Database.y-(Database.size+1)*math.ceil(Index/Database.line))
-			self:UpdateFrame(self.framelist[Index],Spell[2],Spell[3])
-			Index = Index + 1
-		end
-	end
-	self:Launch()
-	self:RegisterEvent("PLAYER_ENTERING_WORLD", "Event")
+	self.linecount = 1
+	self:RegisterEvent("PLAYER_ENTERING_WORLD", "Reset")
 end
 
 function InterruptBar:OnDisable()
-	local Index = 1
-	for ClassIndex, ClassList in ipairs(Database.list) do
-		for SpellIndex, Spell in ipairs(ClassList[2]) do
-			self.framelist[Index]:Hide()
-			self.framelist[Index] = nil
-			Index = Index + 1
-		end
-	end
-	self.framelist = {}
-	self.list = nil
-end
-
-function InterruptBar:Launch()
-		local Index = 1
-		for ClassIndex, ClassList in ipairs(self.list) do
-	    for SpellIndex, Spell in ipairs(ClassList[2]) do
-	        local Frame=self.framelist[Index]
-	        if(Database.fl==0)then
-	            Frame:Show() Frame.CD:Show()
-	        else
-	            Frame:Hide() Frame.CD:Hide()
-	        end
-					Index = Index + 1
-	    end
-		end
-end
-
-local function Test()
-	local Index = 1
-	for ClassIndex, ClassList in ipairs(InterruptBar.list) do
-		for SpellIndex, Spell in ipairs(ClassList[2]) do
-      local Frame=InterruptBar.framelist[Index]
-			InterruptBar:Activatebtn(Frame.CD, GetTime(), Spell[3])
-			Index = Index + 1
-		end
-	end
-end
-
-local function StopTest()
-	InterruptBar:ApplySettings()
-end
-
-local function AddSpec(SpecID)
-end
-
-function InterruptBar:IsSpecFoundForSpell(Spec, SpellSpecList)
-	for Index=1, getn(SpellSpecList) do
-		if(SpellSpecList[Index] == Spec) then
-			return true
-		end
-	end
-	return false
-end
-
-function InterruptBar:DEBUGGetList()
-	for ClassIndex, ClassList in ipairs(self.list) do
-		for SpellIndex, Spell in ipairs(ClassList[2]) do
-			print(ClassList[1] .. " : " .. Spell[2] .. "," .. Spell[3])
-		end
-	end
-end
-
-function InterruptBar:DEBUGGetListForSpecifiedSpec(SpecID)
-	local _,SpecName,_,_,_,_,ClassName =  GetSpecializationInfoByID(SpecID)
-	for ClassIndex, ClassList in ipairs(self.list) do
-		if (ClassList[1] == ClassName) then
-			for SpellIndex, Spell in ipairs(ClassList[2]) do
-				if(self:IsSpecFoundForSpell(SpecID, Spell[1])) then
-					local SpellName = GetSpellInfo(Spell[2])
-					print(ClassName .. SpellName .. "(" .. Spell[2] .. ")" .. ", " .. Spell[3])
-				end
+	if(self.framelist == nil) then
+	else
+		for LineIndex=1, getn(self.framelist) do
+			for FrameIndex=1, getn(self.framelist[LineIndex]) do
+				self.framelist[LineIndex][FrameIndex]:Hide()
 			end
 		end
 	end
-end
-
--- TODO(flo) : reimplement this from the debug one
-function InterruptBar:GetListForSpec()
-	local ArenaEnemyCount = GetNumArenaOpponents()
-	local ArenaEnemySpecKnown = GetNumArenaOpponentSpecs()
-
-	print("Arena Enemy Count" .. ArenaEnemyCount)
-	print("Known Arena Spec" .. ArenaEnemySpecKnow)
-	-- TODO(flo) : compare ArenaEnemyCount and ArenaEnemySpecKnow and launch
-	-- the rest of the function if they're equals otherwise relaunch?(when?)!
-	for EnemyIndex=1, ArenaEnemyCount do
-		local SpecID = GetArenaOpponentSpec(EnemyIndex)
-		self:AddSpec(SpecID)
-	end
+	self.framelist = {}
+	self.linecount = 1
+	self.list = nil
 end
 
 function InterruptBar:UpdateFrame(Frame, SpellId, SpellCD)
@@ -414,6 +359,54 @@ function InterruptBar:UpdateFrame(Frame, SpellId, SpellCD)
     end)
     Frame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 end
+
+function InterruptBar:IsSpecFoundForSpell(Spec, SpellSpecList)
+	for Index=1, getn(SpellSpecList) do
+		if(SpellSpecList[Index] == Spec) then
+			return true
+		end
+	end
+	return false
+end
+
+function InterruptBar:AddSpec(SpecID)
+	local _,SpecName,_,_,_,_,ClassName =  GetSpecializationInfoByID(SpecID)
+	for ClassIndex, ClassList in ipairs(self.list) do
+		if(ClassList[1] == ClassName) then
+			local LineIndex = self.linecount
+			self.framelist[LineIndex] = {}
+			local FrameIndex = 1
+			for SpellIndex, Spell in pairs(ClassList[2]) do
+				if(self:IsSpecFoundForSpell(SpecID, Spell[1])) then
+					local PosX = self:GetPosXFromFrameIndex(FrameIndex, Database.x, Database.marginx, Database.size)
+					local PosY = self:GetPosYFromLineIndex(LineIndex, Database.y, Database.marginy, Database.size)
+					self.framelist[LineIndex][FrameIndex] =
+						self:CreateFrame(LineIndex, Spell[2], Spell[3], PosX, PosY)
+					self:UpdateFrame(self.framelist[LineIndex][FrameIndex], Spell[2], Spell[3])
+					FrameIndex = FrameIndex + 1
+				end
+			end
+			self.linecount = self.linecount + 1
+		end
+	end
+end
+
+
+-- TODO(flo) : reimplement this from the debug one
+function InterruptBar:AddArenaSpec()
+	local ArenaEnemyCount = GetNumArenaOpponents()
+	local ArenaEnemySpecKnown = GetNumArenaOpponentSpecs()
+
+	print("Arena Enemy Count" .. ArenaEnemyCount)
+	print("Known Arena Spec" .. ArenaEnemySpecKnow)
+	-- TODO(flo) : compare ArenaEnemyCount and ArenaEnemySpecKnow and launch
+	-- the rest of the function if they're equals otherwise relaunch?(when?)!
+	for EnemyIndex=1, ArenaEnemyCount do
+		local SpecID = GetArenaOpponentSpec(EnemyIndex)
+		self:AddSpec(SpecID)
+	end
+end
+
 
 local function InterruptBar_OnUpdate(self)
 	if GetTime()>=self.start+self.duration then
@@ -435,6 +428,29 @@ end
 function InterruptBar:Deactivatebtn(Frame)
 	Frame:GetParent():Hide()
 	Frame:SetScript("OnUpdate",nil)
+end
+
+-- LOCAL FUNCTIONS
+
+local function Test()
+	for LineIndex=1, getn(InterruptBar.framelist) do
+		for FrameIndex=1, getn(InterruptBar.framelist[LineIndex]) do
+			local Frame = InterruptBar.framelist[LineIndex][FrameIndex]
+			InterruptBar:Activatebtn(Frame.CD, GetTime(), Frame.CDInSecs)
+		end
+	end
+end
+
+local function StopTest()
+	InterruptBar:ApplySettings()
+end
+
+local function AddSpec()
+	InterruptBar:AddSpec(Database.spectoadd)
+end
+
+local function Reset()
+	InterruptBar:Reset()
 end
 
 -- OPTIONS
@@ -487,12 +503,6 @@ function InterruptBar:GetOptions()
 				min=5,max=100,step=1,bigStep=5,
 				order=13
 			},
-			line={
-				type="range",
-				name="Icons per line",
-				min=1,max=50,step=1,bigStep=1,
-				order=14
-			},
 			fl={
 				type="select",
 				name="Display",
@@ -524,6 +534,12 @@ function InterruptBar:GetOptions()
 				func=AddSpec,
 				order=18
 			},
+			reset={
+				type="execute",
+				name="Reset",
+				func=Reset,
+				order=22
+			}
 		}
 	}
 end
