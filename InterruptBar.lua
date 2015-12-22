@@ -6,9 +6,15 @@
 --
 --------------------------------------------------
 
+-- TODO(flo) : http://wowprogramming.com/docs/api/GetArenaOpponentSpec
+	-- add hunter/mage/monk/priest/rogue/shaman/warlock spells....
+	-- try to implement one line par arena frame
+	-- split arena from battlegrounds/worldmap implementations
+
+
 local AddonName,SKG=...
 local InterruptBar=SKG:NewModule("InterruptBar","AceEvent-3.0")
-local db
+local Database
 
 local defaults={global={
 	enabled=true,
@@ -17,102 +23,190 @@ local defaults={global={
 	y=-50,
 	size=30,
 	line=9,
+	list={
+	-- Death Knight --------------------------------
+		{47476,60}, -- Strangulate
+		{47528,15}, -- Mind Freeze
+		{47481,60}, -- Gnaw
+		{91802,30}, -- Shambling Rush
+		{108194 ,30}, -- Asphyxiate
+		{49576,25}, -- Death Grip
+		{48707,45}, -- Anti-magic shell
+		{48743,120}, -- Death Pact
+		{48792,180}, -- Icebound Fortitude
+		{49028,90}, -- Dancing Rune Weapon
+		{49039,120}, -- Lichborne
+		{51052,120}, -- Anti magi zone
+		{77606,60}, -- Dark Simulacrum
+	-- Druid --------------------------------
+		{78675,60}, -- Solar Beam
+		{106839 ,15}, -- Skull Bash
+		{102359 ,30}, -- Mass Entanglement
+		{99,30}, -- Incapacitating Roar
+		{5211 ,50}, -- Mighty Bash
+		{132469 ,30}, -- Typhoon
+		{61336,180 }, -- Survival Instincts
+		{50334,180 }, -- Berserk
+	-- Hunter --------------------------------
+	-- Mage --------------------------------
+		{2139,24}, -- Counterspell
+	-- Monk --------------------------------
+		{116705,15}, -- Spear Hand Strike (kick)
+	-- Paladin --------------------------------
+		{96231,15}, -- Rebuke
+		{853,60}, -- Hammer of Justice
+		{105593,30}, -- Fist of Justice
+		{20066,15}, -- Repentance
+		{31884,120}, -- Avenging Wrath
+		{31821,180}, -- Devotion Aura
+		{642,300}, -- Divine Shield
+		{1022,300}, -- Hand of Protection
+		{1044,25}, -- Hand of Freedom
+		{6940,120}, -- Hand of Sacrifice
+		{114039,30}, -- Hand of Purity
+	-- Priest --------------------------------
+		{8122,42}, -- Psychic Scream
+
+	-- Rogue --------------------------------
+		{1766,15}, -- Kick
+	-- Shaman --------------------------------
+		{57994,12}, -- Wind Shear
+	-- Warlock --------------------------------
+	-- Warrior --------------------------------
+		{6552,15}, -- Pummel
+		{1719 ,180 }, -- Recklessness
+		{23920,25}, -- Spell Reflection
+		{114028 ,30}, -- Mass Spell Reflection
+		{46968,20}, -- Shockwave
+		{107570 ,30}, -- Storm Bolt
+		{871 ,180 }, -- Shield wall
+		{3411,30}, -- Intervene
+		{114029 ,30}, -- Safeguard
+		{5246 ,90}, -- Intimidating Shout
+		{6544 ,45}, -- Heroic Leap
+		{18499,30}, -- Berserker Rage
+	}
 }}
 
 function InterruptBar:OnInitialize()
 	self.db=SKG.db:RegisterNamespace("InterruptBar",defaults,true)
-	db=self.db.global
-	self:SetEnabledState(db.enabled)
+	Database=self.db.global
+	self:SetEnabledState(Database.enabled)
 	self.options=self:GetOptions()
 	SKG:RegisterModuleOptions("InterruptBar",self.options,"L InterruptBar")
-	-- self:RegisterEvent("PLAYER_LOGIN")
-	self:Enable()
 end
--- function InterruptBar:PLAYER_LOGIN()
--- end
 
 -- INTERRUPT BAR
 
 function InterruptBar:ApplySettings()
+	self:OnDisable()
+	self:OnEnable()
 end
 
-function InterruptBar:Enable()
-
-ib=CreateFrame("Frame")
--- ib.li={{6552,15},{102060,40},{1766,15},{47528,15},{47476,60},{96231,15},{57994,12},{2139,20},{116705,15},{80965,15},{78675,60},{34490,24},
--- {19647,24},{119910,24},{132409,24},{115781,24},{119911,24},{15487,45},{23920,25},{114028,60},{1719,180},{18499,30},{46968,40},{108194,30},
--- {5484,40},{51514,35},{8143,60},{8177,25},{19503,30},{60192,28},{1499,28},{106951,180},{99,30},{5211,50},{44572,30},{12472,180},{108978,180},
--- {113724,45},{12043,90},{119381,45},{31884,180},{853,60},{105593,30},{115750,120},{108921,45},{8122,27},{51713,60},{2094,120}}
-ib.li={{6552,15},{102060,40},{1766,15},{47528,15},{47476,60},{96231,15},{57994,12},{2139,20},{116705,15},{80965,15},{78675,60},
-{34490,24},{147362,24},{19647,24},{119910,24},{132409,24},{115781,24},{119911,24},{15487,45},{23920,25},{114028,60},{108194,30},
-{853,60},{105593,30},{44572,30},{5484,40},{8122,27},{8143,60},{19503,30},{60192,28},{1499,28},{12043,90}}
--- fl=1 ic=30 xp=-800 yp=-50 n=12 -- ic=icon size, xp=x position, yp=y position, n=number per line
--- fl=1 ic=30 xp=-124 yp=-50 n=9 -- ic=icon size, xp=x position, yp=y position, n=number per line
-function ib:cf(i,s,x,y)
-    local _,_,t=GetSpellInfo(s)
-    local f=CreateFrame("Frame",nil,UIParent)
-    f:SetPoint("CENTER",x,y)
-    f:SetSize(db.size,db.size)
-    f.t=f:CreateTexture(nil,"BORDER")
-    f.t:SetAllPoints(true)
-    f.t:SetTexture(t)
-    f.c=CreateFrame("Cooldown",nil,f)
-    f.c:SetAllPoints(f)
-    return f
+function InterruptBar:OnEnable()
+	self.framelist = {}
+	self.list = Database.list
+	for Index, Spell in ipairs(Database.list) do
+		_G["ib"..Index]=self:CreateFrame(Index, Spell[1],
+			Database.x+(Database.size+1)*math.ceil((Index-1)%Database.line),
+			Database.y-(Database.size+1)*math.ceil(Index/Database.line))
+		self:UpdateFrame(_G["ib"..Index],Spell[1],Spell[2])
+	end
+	self:Launch()
+	self:RegisterEvent("PLAYER_ENTERING_WORLD", "Event")
 end
-function ib.update(self)
-	if GetTime()>=self.start+self.duration then
-        ib:deactivatebtn(self)
+
+function InterruptBar:Event()
+    self:ApplySettings()
+end
+
+function InterruptBar:OnDisable()
+	for Index, Spell in ipairs(Database.list) do
+		_G["ib"..Index]=nil
+		self.framelist[Index]:Hide()
+	end
+	self.framelist = {}
+	self.list = nil
+end
+
+function InterruptBar:Launch()
+    for Index,Spell in ipairs(self.list) do
+        local Frame=_G["ib"..Index]
+        if(Database.fl==0)then
+            Frame:Show() Frame.CD:Show()
+        else
+            Frame:Hide() Frame.CD:Hide()
+        end
     end
 end
-function ib:activatebtn(frame,ptime,lc)
-	frame:GetParent():Show()
-	frame.start=ptime
-	frame.duration=lc
-	frame:SetCooldown(ptime,lc)
-	if(db.fl==1) then
-		frame:SetScript("OnUpdate",ib.update)
+
+local function Test()
+	for Index,Spell in ipairs(InterruptBar.list) do
+        local Frame=_G["ib"..Index]
+		InterruptBar:Activatebtn(Frame.CD, GetTime(), Spell[2])
 	end
 end
-function ib:deactivatebtn(frame)
-	frame:GetParent():Hide()
-	frame:SetScript("OnUpdate",nil)
+
+local function StopTest()
+	InterruptBar:ApplySettings()
 end
-function ib:ud(f,ls,lc)
-    f:SetScript("OnEvent",function(_,_,_,e,_,_,_,b,_,_,_,_,_,s)
-        if(e=="SPELL_CAST_SUCCESS"and s==ls)then
-            if bit.band(b,0x40)==0x40 then --or bit.band(b,0x100)==0x100 then
-                ib:activatebtn(f.c,GetTime(),lc)
+
+
+function InterruptBar:CreateFrame(Index, SpellId, PosX, PosY)
+    local _,_,Texture=GetSpellInfo(SpellId)
+    local Frame=CreateFrame("Frame",nil,UIParent)
+	table.insert(self.framelist, Frame)
+    Frame:SetPoint("CENTER", PosX, PosY)
+    Frame:SetSize(Database.size, Database.size)
+    Frame.Texture=Frame:CreateTexture(nil,"BORDER")
+    Frame.Texture:SetAllPoints(true)
+    Frame.Texture:SetTexture(Texture)
+    Frame.CD=CreateFrame("Cooldown",nil,Frame)
+    Frame.CD:SetAllPoints(Frame)
+    return f
+end
+
+function InterruptBar:UpdateFrame(Frame, SpellId, SpellCD)
+    Frame:SetScript("OnEvent",function(_,_,_,Event,_,_,_,SourceFlags,_,_,_,_,_,ID)
+        if(Event=="SPELL_CAST_SUCCESS"and ID==SpellId)then
+            if bit.band(SourceFlags,0x40)==0x40 then --or bit.band(b,0x100)==0x100 then
+							-- 0x40 ==  COMBATLOG_OBJECT_REACTION_HOSTILE
+                self:Activatebtn(Frame.CD,GetTime(),SpellCD)
             end
         end
     end)
-    f:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+    Frame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 end
-for i,s in ipairs(ib.li) do
-    _G["ib"..i]=ib:cf(i,s[1],db.x+(db.size+1)*math.ceil((i-1)%db.line),db.y-(db.size+1)*math.ceil(i/db.line))
-    ib:ud(_G["ib"..i],s[1],s[2])
-end
-ib:SetScript("OnEvent",function()
-    for i,s in ipairs(ib.li) do
-        local f=_G["ib"..i]
-        if(db.fl==0)then
-            f:Show() f.c:Show()
-        else
-            f:Hide() f.c:Hide()
-        end
-    end
-end)
-ib:RegisterEvent("PLAYER_ENTERING_WORLD")
 
+local function InterruptBar_OnUpdate(self)
+	if GetTime()>=self.start+self.duration then
+		InterruptBar:Deactivatebtn(self)
+    end
+end
+
+
+function InterruptBar:Activatebtn(Frame, Time ,CD)
+	Frame:GetParent():Show()
+	Frame.start=Time
+	Frame.duration=CD
+	Frame:SetCooldown(Time,CD)
+	if(Database.fl==1) then
+		Frame:SetScript("OnUpdate", InterruptBar_OnUpdate)
+	end
+end
+
+function InterruptBar:Deactivatebtn(Frame)
+	Frame:GetParent():Hide()
+	Frame:SetScript("OnUpdate",nil)
 end
 
 -- OPTIONS
 
 local function getter(info)
-	return db[info.arg or info[#info]]
+	return Db[info.arg or info[#info]]
 end
 local function setter(info,value)
-	db[info.arg or info[#info]]=value
+	Db[info.arg or info[#info]]=value
 	InterruptBar:ApplySettings()
 end
 function InterruptBar:GetOptions()
@@ -129,6 +223,8 @@ function InterruptBar:GetOptions()
 				type="toggle",
 				name="Enable",
 				desc="Enable the module",
+				get=getter,
+				set=setter,
 				order=1,
 			},
 			ib={
@@ -166,6 +262,18 @@ function InterruptBar:GetOptions()
 				values={[0]="Always","Standard","Persistent"},
 				-- min=0,max=2,step=1,bigStep=1,
 				order=15
+			},
+			test={
+						type="execute",
+						name="Test",
+						func=Test,
+						order=16
+			},
+			stoptest={
+						type="execute",
+						name="Stop Test",
+						func=StopTest,
+						order=16
 			},
 		}
 	}
