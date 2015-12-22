@@ -235,6 +235,8 @@ end
 function InterruptBar:GetListForSpec()
 	local ArenaEnemyCount = GetNumArenaOpponents()
 	local ArenaEnemySpecKnown = GetNumArenaOpponentSpecs()
+	-- TODO(flo) : compare ArenaEnemyCount and ArenaEnemySpecKnow and launch
+	-- the rest of the function if they're equals otherwise relaunch?(when?)!
 	self.arenalist = {}
 	for EnemyIndex=1, ArenaEnemyCount do
 		local Spec = GetArenaOpponentSpec(EnemyIndex)
