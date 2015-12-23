@@ -8,8 +8,8 @@
 
 -- TODO(flo) :
 	-- do i miss some spells ? find bugging spells
-	-- split pet implementation, petc cc will have a line and there will be no comparison since
-	-- there's no way to find pet's owner
+	-- maybe try UNIT_SPELL_SUCCEEDED to retrieve info about pets
+	-- option to classic interruptbar (without lines)
 -- DEATHKNIGHT
 
 -- DRUID
@@ -434,21 +434,22 @@ function InterruptBar:UpdateFrame(Frame, SpellId, SpellCD, IsPet)
     Frame:SetScript("OnEvent",function(_,_,_,Event,_,SourceGUID,SourceName,SourceFlags,_,_,_,_,_,ID)
         if(Event=="SPELL_CAST_SUCCESS"and ID==SpellId)then
             if bit.band(SourceFlags,0x40)==0x40 then -- 0x40 ==  COMBATLOG_OBJECT_REACTION_HOSTILE
-							if(IsPet == 1) then
-								self:Activatebtn(Frame.CD, GetTime(), SpellCD)
+							if(IsArena or IsArenaSkirmish()) then
+								local TestGUID = UnitGUID(Frame.GUID)
+								local TestGUIDPet = UnitGUID(Frame.GUID .. "pet")
+								if (TestGUID == SourceGUID or TestGUIDPet == SourceGUID) then
+	                self:Activatebtn(Frame.CD,GetTime(),SpellCD)
+								end
 							else
-								if(IsArena or IsArenaSkirmish()) then
-									local TestGUID = UnitGUID(Frame.GUID)
-									if (TestGUID == SourceGUID) then
-		                self:Activatebtn(Frame.CD,GetTime(),SpellCD)
-									end
+								if(IsPet == 1) then
+									self:Activatebtn(Frame.CD, GetTime(), SpellCD)
 								else
-									if(Frame.GUID == SourceGUID) then
-		                self:Activatebtn(Frame.CD,GetTime(),SpellCD)
-									end
+								if(Frame.GUID == SourceGUID) then
+	                self:Activatebtn(Frame.CD,GetTime(),SpellCD)
 								end
 							end
-            end
+						end
+          end
         end
     end)
 end
