@@ -275,7 +275,71 @@ function InterruptBar:OnInitialize()
 	SKG:RegisterModuleOptions("InterruptBar",self.options,"L InterruptBar")
 end
 
+function InterruptBar:ApplySettings()
+	self:Move(Database.x, Database.y, Database.marginx, Database.marginy, Database.size)
+end
+
+function InterruptBar:OnEnable()
+	self.framelist = {}
+	self.list = Database.list
+	self.poolframes = {}
+	self.mainframe=CreateFrame("Frame", nil, UIParent)
+	self.mainframe:RegisterEvent("ARENA_PREP_OPPONENT_SPECIALIZATIONS")
+	self:UpdateArenaSpec()
+	self:RegisterEvent("PLAYER_ENTERING_WORLD", "EnterWorld")
+	self:RegisterEvent("PLAYER_LEAVING_WORLD", "QuitWorld")
+end
+
+function InterruptBar:OnDisable()
+	if(self.framelist ~= nil) then
+		for LineIndex=1, getn(self.framelist) do
+			for FrameIndex=1, getn(self.framelist[LineIndex]) do
+				local Frame = self.framelist[LineIndex][FrameIndex]
+				DisableFrame(Frame)
+			end
+		end
+	end
+	self.framelist = nil
+	self.list = nil
+	self.mainframe= nil
+	self.poolframes= nil
+end
+
+function InterruptBar:UpdateArenaSpec()
+	self.mainframe:SetScript("OnEvent", function(Self, Event)
+		local ArenaEnemySpecKnown = GetNumArenaOpponentSpecs()
+		if(Event == "ARENA_PREP_OPPONENT_SPECIALIZATIONS") then
+			if(ArenaEnemySpecKnown >= 0) then
+				self:AddArenaSpec(ArenaEnemySpecKnown)
+			else
+				self.mainframe:RegisterEvent("ARENA_OPPONENT_UPDATE")
+			end
+		elseif(Event == "ARENA_OPPONENT_UPDATE") then
+			local ArenaEnemyCount = GetNumArenaOpponents()
+			if(ArenaEnemySpecKnown ~= nil) then
+				if(ArenaEnemyCount >= 0 and ArenaEnemyCount == ArenaEnemySpecKnown) then
+					self.mainframe:UnregisterEvent("ARENA_OPPONENT_UPDATE")
+					self.mainframe:SetScript("OnEvent", nil)
+					self:AddArenaSpec(ArenaEnemyCount)
+				end
+			end
+		end
+	end)
+end
+
 -- INTERRUPT BAR
+
+function InterruptBar:DisableFrame(Frame)
+		Frame:SetScript("OnEvent", nil)
+		Frame:UnregisterAllEvents()
+		Frame.CD.start=Time
+		Frame.CD.duration=CD
+		Frame.CD:SetCooldown(0,0)
+		Frame.CD:Hide()
+		self:Deactivatebtn(Frame.CD)
+		Frame:Hide()
+		Frame.Texture:Hide()
+end
 
 function InterruptBar:GetPosXFromFrameIndex(FrameIndex, X, MarginX, Size)
 	local PosX = X + (Size + MarginX)*math.ceil(FrameIndex-1)
@@ -300,24 +364,88 @@ function InterruptBar:Move(X, Y, MarginX, MarginY, Size)
 	end
 end
 
-function InterruptBar:ApplySettings()
-	self:Move(Database.x, Database.y, Database.marginx, Database.marginy, Database.size)
+function InterruptBar:QuitWorld()
+		if(self.framelist ~= nil) then
+			for LineIndex=1, getn(self.framelist) do
+				for FrameIndex=1, getn(self.framelist[LineIndex]) do
+					local Frame = self.framelist[LineIndex][FrameIndex]
+					self:DisableFrame(Frame)
+					table.insert(self.poolframes, Frame)
+				end
+			end
+		end
+		self.framelist = {}
 end
 
-function InterruptBar:Reset()
-	InterruptBar:OnDisable()
-	InterruptBar:OnEnable()
+function InterruptBar:ShowFrame(Frame)
+	Frame:Show()
+	Frame.CD:Show()
+	Frame.Texture:Show()
+end
+
+function InterruptBar:HideFrame(Frame)
+	Frame:Hide()
+	Frame.CD:Hide()
+	Frame.Texture:Hide()
+end
+
+function InterruptBar:RegisterFrame(Frame)
+	Frame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+	if(Database.fl == 0) then
+		self:ShowFrame(Frame)
+	else
+		self:HideFrame(Frame)
+	end
+end
+
+function InterruptBar:EnterWorld()
+	local _, InstanceType = IsInInstance()
+	if(InstanceType ~= "arena") then
+		InterruptBar:EnterNonArenaWorld()
+	end
+end
+
+function InterruptBar:EnterNonArenaWorld()
+	local FrameIndex = 1
+	local LineIndex = 1
+	self.framelist[LineIndex] = {}
+	for ClassIndex, ClassList in ipairs(Database.list) do
+		for SpellIndex, Spell in ipairs(ClassList[2]) do
+			local NewLine = FrameIndex % Database.maxline
+			if(NewLine == 0) then
+				LineIndex = LineIndex + 1
+				FrameIndex = 1
+				self.framelist[LineIndex] = {}
+			end
+			local PosX = InterruptBar:GetPosXFromFrameIndex(FrameIndex, Database.x, Database.marginx, Database.size)
+			local PosY = InterruptBar:GetPosYFromLineIndex(LineIndex, Database.y, Database.marginy, Database.size)
+			self.framelist[LineIndex][FrameIndex] =
+				self:CreateFrame(LineIndex, Spell[2], Spell[3], PosX, PosY)
+			self:UpdateFrame(self.framelist[LineIndex][FrameIndex], Spell[2], Spell[3], "all")
+			self:RegisterFrame(self.framelist[LineIndex][FrameIndex])
+			FrameIndex = FrameIndex + 1
+		end
+	end
 end
 
 function InterruptBar:CreateFrame(LineIndex, SpellId, CDInSecs, PosX, PosY)
 	local _,_,Texture=GetSpellInfo(SpellId)
-	local Frame=CreateFrame("Frame",nil,UIParent)
+	local Frame = nil
+	if(getn(self.poolframes) > 0) then
+		Frame=table.remove(self.poolframes)
+	else
+		Frame=CreateFrame("Frame",nil,UIParent)
+	end
 	Frame:SetPoint("CENTER", PosX, PosY)
 	Frame:SetSize(Database.size, Database.size)
-	Frame.Texture=Frame:CreateTexture(nil,"BORDER")
+	if(Frame.Texture == nil) then
+		Frame.Texture=Frame:CreateTexture(nil,"BORDER")
+	end
 	Frame.Texture:SetAllPoints(true)
 	Frame.Texture:SetTexture(Texture)
-	Frame.CD=CreateFrame("Cooldown",nil,Frame)
+	if(Frame.CD == nil) then
+		Frame.CD=CreateFrame("Cooldown",nil,Frame)
+	end
 	Frame.CD:SetAllPoints(Frame)
 	Frame.CDInSecs = CDInSecs
 	Frame.SpellID = SpellID
@@ -327,112 +455,28 @@ end
 function InterruptBar:AddArenaSpec(ArenaEnemyCount)
 	for EnemyIndex=1, ArenaEnemyCount do
 		local SpecID = GetArenaOpponentSpec(EnemyIndex)
-		self:AddSpec(SpecID, "arena" .. EnemyIndex)
+		self:AddSpec(SpecID, "arena" .. EnemyIndex, EnemyIndex)
 	end
 end
 
--- TODO(flo) : reimplement this from the debug one
-function InterruptBar:CheckArenaSpec()
-	local ArenaEnemyCount = GetNumArenaOpponents()
-	local ArenaEnemySpecKnown = GetNumArenaOpponentSpecs()
-	print("Arena Enemy Count" .. ArenaEnemyCount)
-	print("Known Arena Spec" .. ArenaEnemySpecKnow)
-	if(ArenaEnemyCount ~= ArenaEnemySpecKnown) then
-		return false
-	end
-	self:AddArenaSpec(ArenaEnemyCount)
-	return true
-end
-
-function InterruptBar:UpdateArenaSpec()
-	self.mainframe:SetScript("OnEvent", function()
-		local ArenaEnemyCount = GetNumArenaOpponents()
-		local ArenaEnemySpecKnown = GetNumArenaOpponentSpecs()
-		print("Arena Enemy Count" .. ArenaEnemyCount)
-		print("Known Arena Spec" .. ArenaEnemySpecKnow)
-		if(ArenaEnemyCount == ArenaEnemySpecKnow) then
-			self:AddArenaSpec(ArenaEnemyCount)
-			self.mainframe:UnregisterEvent("ARENA_OPPONENT_UPDATE")
-		end
-	end)
-	self.mainfrane:RegisterEvent("ARENA_OPPONENT_UPDATE")
-end
-
-function InterruptBar:OnEnable()
-	self.framelist = {}
-	self.list = Database.list
-	self.linecount = 1
-	self:RegisterEvent("PLAYER_ENTERING_WORLD", "Reset")
-	local IsArena,_ = IsActiveBattlefieldArena()
-	if(IsArena or IsArenaSkirmish()) then
-		if(not self:CheckArenaSpec()) then
-			self.mainframe=CreateFrame("Frame", nil, UIParent)
-			self:UpdateArenaSpec()
-		end
-	else
-	local FrameIndex = 1
-	local LineIndex = self.linecount
-	self.framelist[LineIndex] = {}
-	local OldSpell = 0
-		for ClassIndex, ClassList in ipairs(Database.list) do
-			for SpellIndex, Spell in ipairs(ClassList[2]) do
-				local NewLine = FrameIndex % Database.maxline
-				if(NewLine == 0) then
-					LineIndex = LineIndex + 1
-					self.linecount = self.linecount + 1
-					FrameIndex = 1
-					self.framelist[LineIndex] = {}
-				end
-				if(OldSpell ~= Spell[2]) then
-					local PosX = InterruptBar:GetPosXFromFrameIndex(FrameIndex, Database.x, Database.marginx, Database.size)
-					local PosY = InterruptBar:GetPosYFromLineIndex(LineIndex, Database.y, Database.marginy, Database.size)
-					self.framelist[LineIndex][FrameIndex] =
-						self:CreateFrame(LineIndex, Spell[2], Spell[3], PosX, PosY)
-					self:UpdateFrame(self.framelist[LineIndex][FrameIndex], Spell[2], Spell[3], "all")
-					local Frame = self.framelist[LineIndex][FrameIndex]
-					if(Database.fl == 0) then
-						Frame:Show() Frame.CD:Show()
-					else
-						Frame:Hide() Frame.CD:Hide()
-					end
-					FrameIndex = FrameIndex + 1
-					OldSpell = Spell[2]
-				end
-			end
-		end
-	end
-end
-
-function InterruptBar:OnDisable()
-	if(self.framelist ~= nil) then
-		for LineIndex=1, getn(self.framelist) do
-			for FrameIndex=1, getn(self.framelist[LineIndex]) do
-				self.framelist[LineIndex][FrameIndex]:Hide()
-			end
-		end
-	end
-	self.framelist = {}
-	self.linecount = 1
-	self.list = nil
-	self.mainframe=nil
-end
 
 function InterruptBar:UpdateFrame(Frame, SpellId, SpellCD, UnitID)
 	Frame:SetScript("OnEvent",function(_,_,_,Event,_,SourceGUID,SourceName,SourceFlags,_,_,_,_,_,ID)
 		if(Event=="SPELL_CAST_SUCCESS"and ID==SpellId) then
 	    if bit.band(SourceFlags,0x40)==0x40 then -- 0x40 ==  COMBATLOG_OBJECT_REACTION_HOSTILE
-				if(IsArena or IsArenaSkirmish()) then
+				local _, InstanceType = IsInInstance()
+				if(InstanceType == "arena") then
 					local TestGUID = UnitGUID(UnitID)
 					local TestGUIDPet = UnitGUID(UnitID .. "pet")
 					if (TestGUID == SourceGUID or TestGUIDPet == SourceGUID) then
 	        	self:Activatebtn(Frame.CD,GetTime(),SpellCD)
 					end
-					else
-	          self:Activatebtn(Frame.CD,GetTime(),SpellCD)
-					end
+				else
+          self:Activatebtn(Frame.CD,GetTime(),SpellCD)
 				end
-	    end
-	  end)
+			end
+    end
+  end)
 end
 
 function InterruptBar:IsSpecFoundForSpell(Spec, SpellSpecList)
@@ -447,20 +491,19 @@ end
 function InterruptBar:RemoveOldFrames(LineIndex)
 		if(self.framelist[LineIndex] ~= nil) then
 			for FrameIndexToRemove = 1, getn(self.framelist[LineIndex]) do
+				self.framelist[LineIndex][FrameIndexToRemove]:UnregisterAllEvents()
 				self.framelist[LineIndex][FrameIndexToRemove]:Hide()
-				self.framelist[LineIndex][FrameIndexToRemove] = nil
+				self.framelist[LineIndex][FrameIndexToRemove].Texture:Hide()
+				self.framelist[LineIndex][FrameIndexToRemove].CD:Hide()
 			end
 		end
 end
 
-function InterruptBar:AddSpec(SpecID, UnitID)
-	local _,SpecName,_,_,_,_,ClassName =  GetSpecializationInfoByID(SpecID)
+function InterruptBar:AddSpec(SpecID, UnitID, EnemyIndex)
+	local _,_,_,_,_,_,ClassName =  GetSpecializationInfoByID(SpecID)
 	for ClassIndex, ClassList in ipairs(self.list) do
 		if(ClassList[1] == ClassName) then
-			if(self.linecount > Database.maxline) then
-				self.linecount = 1
-			end
-			local LineIndex = self.linecount
+			local LineIndex = EnemyIndex
 			self:RemoveOldFrames(LineIndex)
 			self.framelist[LineIndex] = {}
 			local FrameIndex = 1
@@ -470,17 +513,11 @@ function InterruptBar:AddSpec(SpecID, UnitID)
 					local PosY = self:GetPosYFromLineIndex(LineIndex, Database.y, Database.marginy, Database.size)
 					self.framelist[LineIndex][FrameIndex] =
 						self:CreateFrame(LineIndex, Spell[2], Spell[3], PosX, PosY)
-					self:UpdateFrame(self.framelist[LineIndex][FrameIndex], Spell[2], Spell[3], Spell[4], UnitID)
-					local Frame = self.framelist[LineIndex][FrameIndex]
-					if(Database.fl == 0) then
-						Frame:Show() Frame.CD:Show()
-					else
-						Frame:Hide() Frame.CD:Hide()
-					end
+					self:UpdateFrame(self.framelist[LineIndex][FrameIndex], Spell[2], Spell[3], UnitID)
+					self:RegisterFrame(self.framelist[LineIndex][FrameIndex])
 					FrameIndex = FrameIndex + 1
 				end
 			end
-			self.linecount = self.linecount + 1
 		end
 	end
 end
@@ -491,8 +528,8 @@ local function InterruptBar_OnUpdate(self)
     end
 end
 
-
 function InterruptBar:Activatebtn(Frame, Time ,CD)
+	Frame:GetParent().Texture:Show()
 	Frame:GetParent():Show()
 	Frame.start=Time
 	Frame.duration=CD
@@ -504,12 +541,13 @@ end
 
 function InterruptBar:Deactivatebtn(Frame)
 	Frame:GetParent():Hide()
+	Frame:GetParent().Texture:Hide()
 	Frame:SetScript("OnUpdate",nil)
 end
 
 -- LOCAL FUNCTIONS
 
-local function Test()
+local function GlobalTest()
 	for LineIndex=1, getn(InterruptBar.framelist) do
 		for FrameIndex=1, getn(InterruptBar.framelist[LineIndex]) do
 			local Frame = InterruptBar.framelist[LineIndex][FrameIndex]
@@ -518,12 +556,16 @@ local function Test()
 	end
 end
 
-local function AddSpec()
-	InterruptBar:AddSpec(Database.spectoadd, nil)
+local function GlobalEnterWorld()
+	InterruptBar:QuitWorld()
+	InterruptBar:EnterWorld()
 end
 
-local function Reset()
-	InterruptBar:Reset()
+local function GlobalTestEnterArena()
+	InterruptBar:QuitWorld()
+	InterruptBar:AddSpec(259, "arena1", 1)
+	InterruptBar:AddSpec(65, "arena2", 2)
+	InterruptBar:AddSpec(268, "arena3", 3)
 end
 
 -- OPTIONS
@@ -589,30 +631,24 @@ function InterruptBar:GetOptions()
 				-- min=0,max=2,step=1,bigStep=1,
 				order=15
 			},
-			spectoadd={
-				type="range",
-				name="Spec To Add",
-				min=65,max=270,step=1,bigStep=1,
-				order=17
-			},
-			addspec={
-				type="execute",
-				name="Add Spec",
-				func=AddSpec,
-				order=18
-			},
 			test={
 				type="execute",
 				name="Test",
-				func=Test,
+				func=GlobalTest,
 				order=19
 			},
 			reset={
 				type="execute",
 				name="Reset",
-				func=Reset,
+				func=GlobalEnterWorld,
 				order=22
-			}
+			},
+			resettest={
+				type="execute",
+				name="Test Arena",
+				func=GlobalTestEnterArena,
+				order=23
+			},
 		}
 	}
 end

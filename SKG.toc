@@ -28,5 +28,6 @@ LoseControl.lua
 AuraTracker.lua
 ComboPoints.lua
 TrinketICd.lua
+ObjectiveFrame.lua
 
 SandBox.lua

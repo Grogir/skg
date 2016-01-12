@@ -22,6 +22,8 @@ function SpellAlerter:OnInitialize()
 	SKG:RegisterModuleOptions("SpellAlerter",self.options,"L SpellAlerter")
 end
 
+-- TODO(flo) : add Soul Reaper !!! change database!
+
 -- SPELL ALERTER
 
 function SpellAlerter:OnEnable()
@@ -38,11 +40,11 @@ local saDB={
 [16188]="NS",[79206]="NS",[8177]="NS",[108280]="NS",[16190]="NS",[51514]="S",[108269]="NS",--Chaman
 [19503]="S",[60192]="NS",[1499]="NS",[1513]="S",[19574]="NS",[109259]="NS",[19386]="NS",--Chasseur
 [132158]="NS",[29166]="NS",[33786]="S",[2637]="S",[50334]="NS",[106951]="NS",[108291]="NS",[108292]="NS",[108293]="NS",[108294]="NS",[33891]="NS",[102543]="NS",[102560]="NS",[69369]="P",[110700]="NS",[110696]="NS",--Druide
-[113506]="S",[108921]="S",[605]="NS",[89485]="NS",[10060]="NS",[6346]="NS",--Prêtre
+[113506]="S",[108921]="S",[605]="NS",[89485]="NS",[10060]="NS",[6346]="NS",--Prï¿½tre
 [108200]="NS",[77606]="NS",[46584]="NS",[108201]="NS",[49016]="NS",--Dk
 [107574]="NS",[23920]="NS",[114028]="NS",[1719]="NS",--War
 [51713]="NS",[76577]="NS",--Rogue
-[5782]="NS",[108482]="NS",[113861]="NS",[113858]="NS",[113860]="NS",[111771]="NS",--Démo
+[5782]="NS",[108482]="NS",[113861]="NS",[113858]="NS",[113860]="NS",[111771]="NS",--Dï¿½mo
 [122470]="NS",--Monk
 [1022]="NS",[6940]="NS",[1038]="NS",[31821]="NS",[31884]="NS",[1044]="NS",[20066]="S",[642]="NS"--Paladin
 }
@@ -62,8 +64,8 @@ currenticon=0
 saStart=0
 saDur=1.5
 function sa:COMBAT_LOG_EVENT_UNFILTERED(_,eventtype,hideCaster,srcGUID,srcName,srcFlags,_,dstGUID,dstName,dstFlags,_,spellID,spellName,_,auraType)
-	--if(spellName) then print(srcName.."=>"..spellName.." : "..spellID.." : "..eventtype) end -- Permet de récupérer le type de l'event et les ID des spells
-	if SpellCastEvents[eventtype] and band(srcFlags,COMBAT_LOG)==COMBAT_LOG  and saDB[spellID] then 
+	--if(spellName) then print(srcName.."=>"..spellName.." : "..spellID.." : "..eventtype) end -- Permet de rï¿½cupï¿½rer le type de l'event et les ID des spells
+	if SpellCastEvents[eventtype] and band(srcFlags,COMBAT_LOG)==COMBAT_LOG  and saDB[spellID] then
 		if eventtype=="SPELL_AURA_APPLIED" and saDB[spellID]~="PS" and saDB[spellID]~="P" then return end
 		self:SetScript("OnUpdate",SAOnUpdate)
 		icon=select(3,GetSpellInfo(spellID))
@@ -78,7 +80,7 @@ function sa:COMBAT_LOG_EVENT_UNFILTERED(_,eventtype,hideCaster,srcGUID,srcName,s
 end
 function SAOnUpdate()
 	if(currenticon==0) then sa:Hide() return end
-	if(currenticon==1) then 
+	if(currenticon==1) then
 		if(GetTime()>saStart+saDur) then
 			sa:Hide()
 			currenticon=0

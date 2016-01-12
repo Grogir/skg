@@ -257,7 +257,7 @@ ilvlcheck:SetScript("OnEvent",function()
 				   l=GetInventoryItemLink("player",16)
 				   if l then
 					   local sub,_,t=select(7,GetItemInfo(l))
-					   if t=="INVTYPE_2HWEAPON" or t=="INVTYPE_RANGED" or t=="INVTYPE_RANGEDRIGHT" and sub~=select(16,GetAuctionItemSubClasses(1)) then 
+					   if t=="INVTYPE_2HWEAPON" or t=="INVTYPE_RANGED" or t=="INVTYPE_RANGEDRIGHT" and sub~=select(16,GetAuctionItemSubClasses(1)) then
 						  break
 					   end
 				   end
