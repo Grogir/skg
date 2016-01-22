@@ -22,7 +22,8 @@ function SpellAlerter:OnInitialize()
 	SKG:RegisterModuleOptions("SpellAlerter",self.options,"L SpellAlerter")
 end
 
--- TODO(flo) : add Soul Reaper !!! change database!
+-- TODO(flo) : add Soul Reaper !!! Change database!
+-- TODO(flo) : customize icon display duration, maybe some sounds and later database?
 
 -- SPELL ALERTER
 
@@ -35,18 +36,102 @@ local COMBATLOG_PLAYER=COMBATLOG_OBJECT_TYPE_PLAYER --DEBUG
 local SpellCastEvents={SPELL_CAST_START=1,SPELL_CAST_SUCCESS=1,SPELL_CREATE=1,SPELL_AURA_APPLIED=1}
 local band=bit.band
 local saDB={
---[22812]="S",[16974]="S",[139]="NS",[69369]="S",[33206]="NS",[6788]="NS",[33786]="NS",[127538]="S",
-[118]="NS",[28272]="NS",[28271]="NS",[61305]="NS",[61025]="NS",[61721]="NS",[61780]="NS",[12043]="NS",[108978]="NS",[45438]="NS",[12472]="NS",[11958]="NS",--Mage
-[16188]="NS",[79206]="NS",[8177]="NS",[108280]="NS",[16190]="NS",[51514]="S",[108269]="NS",--Chaman
-[19503]="S",[60192]="NS",[1499]="NS",[1513]="S",[19574]="NS",[109259]="NS",[19386]="NS",--Chasseur
-[132158]="NS",[29166]="NS",[33786]="S",[2637]="S",[50334]="NS",[106951]="NS",[108291]="NS",[108292]="NS",[108293]="NS",[108294]="NS",[33891]="NS",[102543]="NS",[102560]="NS",[69369]="P",[110700]="NS",[110696]="NS",--Druide
-[113506]="S",[108921]="S",[605]="NS",[89485]="NS",[10060]="NS",[6346]="NS",--Pr�tre
-[108200]="NS",[77606]="NS",[46584]="NS",[108201]="NS",[49016]="NS",--Dk
-[107574]="NS",[23920]="NS",[114028]="NS",[1719]="NS",--War
-[51713]="NS",[76577]="NS",--Rogue
-[5782]="NS",[108482]="NS",[113861]="NS",[113858]="NS",[113860]="NS",[111771]="NS",--D�mo
-[122470]="NS",--Monk
-[1022]="NS",[6940]="NS",[1038]="NS",[31821]="NS",[31884]="NS",[1044]="NS",[20066]="S",[642]="NS"--Paladin
+
+-- MAGE
+[118]="S", -- Polymorph(base)
+[28272]="S", -- Polymorph(pig)
+[28271]="S", -- Polymorph(turtle)
+[61305]="S", -- Polymorph(black cat)
+[61025]="S" , -- Polymorph(serpent)
+[61721]="S", -- Polymorph(rabbit)
+[61780]="S", -- Polymorph(turkey)
+[126819]="S", -- Polymorph(pig2)
+[161353]="S", -- Polymorph(polar bear cub)
+[161355]="S", -- Polymorph(penguin)
+[161354]="S", -- Polymorph(monkey)
+[161372]="S", -- Polymorph(turtle2)
+[45438]="NS", -- Ice Block
+[12472]="NS", -- Icy Veins
+[11958]="NS", -- Cold Snap
+[44572]="NS", -- Deep Freeze
+[113724]="S", -- Ring of Frost
+
+-- SHAMAN
+[16188]="NS", -- Ancestral Swiftness
+[79206]="S", -- Spiritwalker's Grace
+[8143]="S", -- Temor Totem
+[8177]="S", -- Grounding Totem
+[108280]="S", -- Healing Tide Totem
+[114049]="NS", -- Ascendance
+[114050]="NS", -- Ascendance
+[114051]="NS", -- Ascendance
+[114052]="NS", -- Ascendance
+[51514]="S", -- Hex
+[108269]="NS", -- Capacitor Totem
+
+-- HUNTER
+[1499]="S", -- Freezing Trap
+[19574]="NS", -- Bestial Wrath
+[19386]="NS", -- Wyvern Sting
+
+-- DRUID
+[132158]="S", -- Nature's Swiftness
+[29166]="NS", -- Innervate
+[33786]="S", -- Cyclone
+[108291]="NS", -- Heart of the wild
+[108292]="NS", -- Heart of the wild
+[108293]="NS", -- Heart of the wild
+[108294]="NS", -- Heart of the wild
+[33891]="NS", -- Incarnation Tree of Life
+[102543]="NS", -- Incarnation King of the Jungle
+[102560]="NS", -- Incarnation Chosen of Elune
+[22812]="S", -- Barksin
+--[69369]="P", -- Predatory Swiftness
+
+-- PRIEST
+[605]="NS", -- Dominate Mind
+[586]="NS", -- Fade
+[10060]="S", -- Power Infusion
+[6346]="S", -- Fear Ward
+[8122]="NS", -- Psychic Scream
+[33206]="NS", -- Pain Suppression
+--[17]="S", -- TEST
+
+-- DEATHKNIGHT
+[108200]="NS", -- Remorseless Winter
+[77606]="S", -- Dark Simulacrum
+[108201]="NS", -- Desecrated Ground
+
+-- WARRIOR
+[23920]="S", --Spell Reflection
+[114028]="S", --Mass Spell Reflection
+[1719]="NS", -- Recklesness
+[107570]="S", --Storm Bolt
+
+-- ROGUE
+[51713]="NS", -- Shadow Dance
+[76577]="NS", -- Smoke Bomb
+[31224]="NS", -- Cloak of Shadows
+
+-- WARLOCK
+[5782]="S", -- Fear
+[108482]="NS", --Unbound Will
+[113861]="NS", -- Dark Souls
+[113858]="NS", -- Dark Souls
+[113860]="NS", -- Dark Souls
+
+-- MONK
+[122470]="NS", -- Touch of Karma
+
+-- PALADIN
+[1022]="S", -- Hand of Protection
+[6940]="S", -- Hand of Sacrifice
+[31821]="NS", -- Devotion Aura
+[31884]="NS", -- Avenging Wrath
+[31842]="NS", -- Avenging Wrath
+[1044]="NS", -- Hand of Freedom
+[20066]="S", -- Repentance
+[642]="NS" -- Divine Shield
 }
 local soundDB={NS=0,S=1,P=0,PS=1}
 local COMBAT_LOG=COMBATLOG_HOSTILE
@@ -55,7 +140,7 @@ sa=CreateFrame("FRAME")
 local sat=sa:CreateTexture(nil,"BACKGROUND")
 sat:SetAllPoints(sa)
 sat:SetTexCoord(0.07,0.93,0.07,0.93)
-sa:SetPoint("CENTER",UIParent,"CENTER",110,50)
+sa:SetPoint("CENTER",UIParent,"CENTER",0,100)
 sa:SetWidth(60)
 sa:SetHeight(60)
 sa:SetScript("OnEvent",function(self,event,...) self[event](self,...) end)
@@ -64,7 +149,6 @@ currenticon=0
 saStart=0
 saDur=1.5
 function sa:COMBAT_LOG_EVENT_UNFILTERED(_,eventtype,hideCaster,srcGUID,srcName,srcFlags,_,dstGUID,dstName,dstFlags,_,spellID,spellName,_,auraType)
-	--if(spellName) then print(srcName.."=>"..spellName.." : "..spellID.." : "..eventtype) end -- Permet de r�cup�rer le type de l'event et les ID des spells
 	if SpellCastEvents[eventtype] and band(srcFlags,COMBAT_LOG)==COMBAT_LOG  and saDB[spellID] then
 		if eventtype=="SPELL_AURA_APPLIED" and saDB[spellID]~="PS" and saDB[spellID]~="P" then return end
 		self:SetScript("OnUpdate",SAOnUpdate)
@@ -74,7 +158,7 @@ function sa:COMBAT_LOG_EVENT_UNFILTERED(_,eventtype,hideCaster,srcGUID,srcName,s
 		saStart=GetTime()
 		sa:Show()
 		if(soundDB[saDB[spellID]]==1) then
-			PlaySoundFile("Interface\\Addons\\Prat-3.0\\sounds\\Text1.ogg") --"Sound\\Doodad\\BellTollAlliance.wav"
+			PlaySound("AuctionWindowClose");
 		end
 	end
 end

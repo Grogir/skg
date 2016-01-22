@@ -1,0 +1,67 @@
+------------------ SPELL ALERTER -------------------
+
+DEATHKNIGHT :
+
+DRUID :
+	Cyclone
+
+HUNTER :
+
+MAGE :
+	Ring of Frost
+	Sheep
+	Icy Veins
+
+MONK :
+
+PALADIN :
+	Hand of Protection
+	Hand of Freedom
+	Hand of Sacrifice
+
+PRIEST :
+	Fade
+	Pyschic Scream
+	Pain Suppression
+
+ROGUE :
+	Cloak
+
+SHAMAN :
+	Spiritwalker's Grace
+
+WARLOCK :
+	Fear
+
+WARRIOR :
+
+
+-----------------------------------------------------------
+------------------ AURA TRACKER DISPELLS -------------------
+
+PRIEST :
+	Power Word : Shield -> 17
+	Power Infusion -> 10060
+	Fear Ward -> 6346
+
+MAGE :
+	Ice Barrier->
+	Icy Veins ->
+
+PALADIN :
+	Hand of Sacrifice->
+	Hand of Freedom->
+	Hand of Protection->
+	Selfless Healer ->
+
+SHAMA :
+	Spiritwalker's Grace-> 79206
+	Earthshield
+
+DEATHKNIGHT :
+	4 bonus set
+
+DRUIDS :
+	Nature's Swift
+	Lifebloom
+-----------------------------------------------------------

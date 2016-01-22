@@ -496,13 +496,13 @@ local function NewAura(name)
 			x={
 				type="range",
 				name="X",
-				softMin=-400,softMax=400,step=1,bigStep=20,--10
+				softMin=-1000,softMax=1000,step=1,bigStep=20,--10
 				order=16
 			},
 			y={
 				type="range",
 				name="Y",
-				softMin=-400,softMax=400,step=1,bigStep=20,--10
+				softMin=-1000,softMax=1000,step=1,bigStep=20,--10
 				order=17
 			},
 			nl1={

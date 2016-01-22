@@ -6,25 +6,6 @@
 --
 --------------------------------------------------
 
--- TODO(flo) :
-	-- do i miss some spells ? find bugging spells
-	-- maybe try UNIT_SPELL_SUCCEEDED to retrieve info about pets
--- TODO(flo) : classic interruptbar for openworld/battleground, splitted lines for arenas!
--- DEATHKNIGHT
-
--- DRUID
-
--- HUNTER
-
--- MAGE
--- MONK
--- PALADIN
--- PRIEST
--- ROGUE
--- SHAMAN
--- WARLOCK
--- WARRIOR
-
 local AddonName,SKG=...
 local InterruptBar=SKG:NewModule("InterruptBar","AceEvent-3.0")
 local Database
@@ -41,7 +22,6 @@ local Defaults={global={
 	maxline=10,
 	list={
 
-		-- 0 for player, 1 for pet
 	-- Death Knight --------------------------------------------------------------
 		--250 - Blood
 		--251 - Frost
@@ -60,7 +40,8 @@ local Defaults={global={
 				{{250, 251, 252}, 49028, 90}, -- Dancing Rune Weapon
 				{{250, 251, 252}, 49039, 120}, -- Lichborne
 				{{250, 251, 252}, 51052, 120}, -- Anti magi zone
-				{{250, 251, 252}, 77606, 60, 0} -- Dark Simulacrum
+				{{250, 251, 252}, 77606, 60}, -- Dark Simulacrum
+				{{250, 251, 251}, 108201, 120} --Desecrated Ground
 			}
 		},
 
@@ -80,7 +61,7 @@ local Defaults={global={
 				{{102, 103, 104, 105}, 102280, 30}, -- Displacer Beast
 				{{102, 103, 104, 105}, 61391, 30}, -- Typhoon
 				{{102, 103, 104, 105}, 61336, 180}, -- Survival Instincts
-				{{102, 103, 104, 105}, 106951, 180, 0} -- Berserk
+				{{102, 103, 104, 105}, 106951, 180} -- Berserk
 				-- {{102, 103, 104, 105}, 132469,}, -- Typhoon
 				-- {{102, 103, 104, 105}, 50334, }, -- Berserk
 			}
@@ -101,7 +82,7 @@ local Defaults={global={
 				{{253, 254, 255}, 19386, 45}, -- Wyvern Sting
 				{{253, 254, 255}, 19574, 60}, -- Bestial Wrath
 				{{253, 254, 255}, 131894, 60}, -- A murder of Crows
-				{{253, 254, 255}, 19577, 60, 0} -- Intimidation
+				{{253, 254, 255}, 19577, 60} -- Intimidation
 			}
 		},
 
@@ -267,6 +248,9 @@ local Defaults={global={
 	}
 }}
 
+-- TODO(flo): make a frame that show the spell's icon once its cooldown expires!
+-- 	as doom_cooldown_pulse does!
+
 function InterruptBar:OnInitialize()
 	self.db=SKG.db:RegisterNamespace("InterruptBar",Defaults,true)
 	Database=self.db.global
@@ -279,10 +263,23 @@ function InterruptBar:ApplySettings()
 	self:Move(Database.x, Database.y, Database.marginx, Database.marginy, Database.size)
 end
 
+function InterruptBar:InitEndCooldownFrame(Frame)
+		Frame:SetPoint("CENTER", 0, 0)
+		Frame:SetSize(100, 100)
+		Frame.texture=Frame:CreateTexture(nil,"BORDER")
+		Frame.texture:SetAllPoints(Frame)
+		--local _,_,Texture=GetSpellInfo(114028)
+		--Frame.texture:SetTexture(Texture)
+		--Frame.texture:Show()
+		--Frame:Show()
+end
+
 function InterruptBar:OnEnable()
 	self.framelist = {}
 	self.list = Database.list
 	self.poolframes = {}
+	self.endcooldown=CreateFrame("Frame", nil, UIParent)
+	self:InitEndCooldownFrame(self.endcooldown)
 	self.mainframe=CreateFrame("Frame", nil, UIParent)
 	self.mainframe:RegisterEvent("ARENA_PREP_OPPONENT_SPECIALIZATIONS")
 	self:UpdateArenaSpec()
@@ -299,10 +296,12 @@ function InterruptBar:OnDisable()
 			end
 		end
 	end
+	self.endcooldown:Hide()
 	self.framelist = nil
 	self.list = nil
 	self.mainframe= nil
 	self.poolframes= nil
+	self.endcooldown = nil
 end
 
 function InterruptBar:UpdateArenaSpec()
@@ -328,6 +327,35 @@ function InterruptBar:UpdateArenaSpec()
 end
 
 -- INTERRUPT BAR
+function remap(Min, Max, t, RemapMin, RemapMax)
+
+	local Result = 0;
+	local Range = Max - Min;
+	if(Range > 0) then
+		local Normalized = (t - Min) / Range;
+		Result = RemapMin + Normalized*(RemapMax - RemapMin);
+	end
+	return Result;
+end
+
+function EndCooldownFrame_OnUpdate(self)
+	local EndTime = self.start + self.duration
+	local t = remap(self.start, EndTime, GetTime(), -1.0, 1.0)
+	self:SetAlpha(1.0 - t)
+	if(EndTime <= GetTime()) then
+		self:SetScript("OnUpdate", nil)
+	end
+end
+
+function InterruptBar:ShowEndCooldownFrame(SpellID)
+	local _,_,Texture=GetSpellInfo(SpellID)
+	self.endcooldown.texture:SetTexture(Texture)
+	self.endcooldown:Show()
+	self.endcooldown.texture:Show()
+	self.endcooldown.start=GetTime()
+	self.endcooldown.duration=2.0
+	self.endcooldown:SetScript("OnUpdate", EndCooldownFrame_OnUpdate)
+end
 
 function InterruptBar:DisableFrame(Frame)
 		Frame:SetScript("OnEvent", nil)
@@ -448,7 +476,7 @@ function InterruptBar:CreateFrame(LineIndex, SpellId, CDInSecs, PosX, PosY)
 	end
 	Frame.CD:SetAllPoints(Frame)
 	Frame.CDInSecs = CDInSecs
-	Frame.SpellID = SpellID
+	Frame.CD.SpellID = SpellId
 	return Frame
 end
 
@@ -524,6 +552,8 @@ end
 
 local function InterruptBar_OnUpdate(self)
 	if GetTime()>=self.start+self.duration then
+		PlaySound("AuctionWindowOpen");
+		InterruptBar:ShowEndCooldownFrame(self.SpellID)
 		InterruptBar:Deactivatebtn(self)
     end
 end
@@ -645,7 +675,7 @@ function InterruptBar:GetOptions()
 			},
 			resettest={
 				type="execute",
-				name="Test Arena",
+				name="Show Arena Test",
 				func=GlobalTestEnterArena,
 				order=23
 			},
