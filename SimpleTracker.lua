@@ -90,7 +90,7 @@ function SimpleTracker:Trinket()
 		arena.trinket=Trinket_CreateFrame(i,arena)
 		arena.trinket:SetScript("OnEvent",Trinket_Filter)
 	end
-	
+
 end
 
 -- DISPEL
@@ -98,7 +98,7 @@ end
 function SimpleTracker:Dispel()
 
 	local Dispel_TTX="Interface\\Icons\\spell_holy_dispelmagic"
-	local Dispel_Shown=false
+	local Dispel_Shown=true
 	local function Dispel_CreateFrame(i,p)
 		local f=CreateFrame("Frame",nil,p)
 		f:SetPoint("TOPLEFT",p,"TOPRIGHT",db.dispelx,db.dispely)
