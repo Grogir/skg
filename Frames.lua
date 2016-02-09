@@ -140,10 +140,10 @@ function Frames:UnitFrames()
 		ShardBarFrame:ClearAllPoints()
 		ShardBarFrame:SetPoint("TOP",PlayerFrame,"BOTTOM",db.runeframex,db.runeframey)
 		if db.runeframescale>0 then ShardBarFrame:SetScale(db.runeframescale) end
-	elseif PaladinPowerBar:IsShown() then
-		PaladinPowerBar:ClearAllPoints()
-		PaladinPowerBar:SetPoint("TOP",PlayerFrame,"BOTTOM",db.runeframex,db.runeframey)
-		if db.runeframescale>0 then PaladinPowerBar:SetScale(db.runeframescale) end
+	-- elseif PaladinPowerBar:IsShown() then
+		-- PaladinPowerBar:ClearAllPoints()
+		-- PaladinPowerBar:SetPoint("TOP",PlayerFrame,"BOTTOM",db.runeframex,db.runeframey)
+		-- if db.runeframescale>0 then PaladinPowerBar:SetScale(db.runeframescale) end
 	end
 	TotemFrame:ClearAllPoints()
 	TotemFrame:SetPoint("TOPLEFT",PlayerFrame,"TOPLEFT",db.totemframex,db.totemframey)
@@ -244,7 +244,8 @@ function Frames:UnitFrames()
 	if arenatest then ArenaEnemyFrames:Show() else ArenaEnemyFrames:Hide() end
 	-- ArenaEnemyBackground:SetPoint("RIGHT", "ArenaEnemyFrame1", "RIGHT", 30, 0)
 	-- /run GetNumArenaOpponents=function() return 3 end UpdateArenaEnemyBackground(1)
-
+	--local raidparty = _G["RaidMemberFrame1"]
+	--print(raidparty);
 	-- Party frames
 	for i=1,4 do
 		local party=_G["PartyMemberFrame"..i]
