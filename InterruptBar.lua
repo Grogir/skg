@@ -248,9 +248,6 @@ local Defaults={global={
 	}
 }}
 
--- TODO(flo): make a frame that show the spell's icon once its cooldown expires!
--- 	as doom_cooldown_pulse does!
-
 function InterruptBar:OnInitialize()
 	self.db=SKG.db:RegisterNamespace("InterruptBar",Defaults,true)
 	Database=self.db.global
@@ -554,7 +551,11 @@ local function InterruptBar_OnUpdate(self)
 	if GetTime()>=self.start+self.duration then
 		PlaySound("AuctionWindowOpen");
 		InterruptBar:ShowEndCooldownFrame(self.SpellID)
-		InterruptBar:Deactivatebtn(self)
+		if(Database.fl==1) then
+			InterruptBar:Deactivatebtn(self)
+		else
+			self:SetScript("OnUpdate", nil)
+		end
     end
 end
 
@@ -564,9 +565,7 @@ function InterruptBar:Activatebtn(Frame, Time ,CD)
 	Frame.start=Time
 	Frame.duration=CD
 	Frame:SetCooldown(Time,CD)
-	if(Database.fl==1) then
-		Frame:SetScript("OnUpdate", InterruptBar_OnUpdate)
-	end
+	Frame:SetScript("OnUpdate", InterruptBar_OnUpdate)
 end
 
 function InterruptBar:Deactivatebtn(Frame)
