@@ -12,6 +12,105 @@ local db
 
 local defaults={global={
 	enabled=true,
+	iconsize=100,
+	spelllist=
+	{
+		-- MAGE
+		[118]="S", -- Polymorph(base)
+		[28272]="S", -- Polymorph(pig)
+		[28271]="S", -- Polymorph(turtle)
+		[61305]="S", -- Polymorph(black cat)
+		[61025]="S" , -- Polymorph(serpent)
+		[61721]="S", -- Polymorph(rabbit)
+		[61780]="S", -- Polymorph(turkey)
+		[126819]="S", -- Polymorph(pig2)
+		[161353]="S", -- Polymorph(polar bear cub)
+		[161355]="S", -- Polymorph(penguin)
+		[161354]="S", -- Polymorph(monkey)
+		[161372]="S", -- Polymorph(turtle2)
+		[45438]="NS", -- Ice Block
+		[12472]="NS", -- Icy Veins
+		[11958]="NS", -- Cold Snap
+		[44572]="NS", -- Deep Freeze
+		[113724]="S", -- Ring of Frost
+
+		-- SHAMAN
+		[16188]="NS", -- Ancestral Swiftness
+		[79206]="S", -- Spiritwalker's Grace
+		[8143]="S", -- Temor Totem
+		[8177]="S", -- Grounding Totem
+		[108280]="S", -- Healing Tide Totem
+		[114049]="NS", -- Ascendance
+		[114050]="NS", -- Ascendance
+		[114051]="NS", -- Ascendance
+		[114052]="NS", -- Ascendance
+		[51514]="S", -- Hex
+		[108269]="NS", -- Capacitor Totem
+
+		-- HUNTER
+		[1499]="S", -- Freezing Trap
+		[19574]="NS", -- Bestial Wrath
+		[19386]="NS", -- Wyvern Sting
+
+		-- DRUID
+		[132158]="S", -- Nature's Swiftness
+		[29166]="NS", -- Innervate
+		[33786]="S", -- Cyclone
+		[108291]="NS", -- Heart of the wild
+		[108292]="NS", -- Heart of the wild
+		[108293]="NS", -- Heart of the wild
+		[108294]="NS", -- Heart of the wild
+		[33891]="NS", -- Incarnation Tree of Life
+		[102543]="NS", -- Incarnation King of the Jungle
+		[102560]="NS", -- Incarnation Chosen of Elune
+		[22812]="S", -- Barksin
+		--[69369]="P", -- Predatory Swiftness
+
+		-- PRIEST
+		[605]="NS", -- Dominate Mind
+		[586]="NS", -- Fade
+		[10060]="S", -- Power Infusion
+		[6346]="S", -- Fear Ward
+		[8122]="NS", -- Psychic Scream
+		[33206]="NS", -- Pain Suppression
+		--[17]="S", -- TEST
+
+		-- DEATHKNIGHT
+		[108200]="NS", -- Remorseless Winter
+		[77606]="S", -- Dark Simulacrum
+		[108201]="NS", -- Desecrated Ground
+
+		-- WARRIOR
+		[23920]="S", --Spell Reflection
+		[114028]="S", --Mass Spell Reflection
+		[1719]="NS", -- Recklesness
+		[107570]="S", --Storm Bolt
+
+		-- ROGUE
+		[51713]="NS", -- Shadow Dance
+		[76577]="NS", -- Smoke Bomb
+		[31224]="NS", -- Cloak of Shadows
+
+		-- WARLOCK
+		[5782]="S", -- Fear
+		[108482]="NS", --Unbound Will
+		[113861]="NS", -- Dark Souls
+		[113858]="NS", -- Dark Souls
+		[113860]="NS", -- Dark Souls
+
+		-- MONK
+		[122470]="NS", -- Touch of Karma
+
+		-- PALADIN
+		[1022]="S", -- Hand of Protection
+		[6940]="S", -- Hand of Sacrifice
+		[31821]="NS", -- Devotion Aura
+		[31884]="NS", -- Avenging Wrath
+		[31842]="NS", -- Avenging Wrath
+		[1044]="NS", -- Hand of Freedom
+		[20066]="S", -- Repentance
+		[642]="NS" -- Divine Shield
+	},
 }}
 
 function SpellAlerter:OnInitialize()
@@ -35,114 +134,19 @@ local COMBATLOG_HOSTILE=COMBATLOG_OBJECT_REACTION_HOSTILE
 local COMBATLOG_PLAYER=COMBATLOG_OBJECT_TYPE_PLAYER --DEBUG
 local SpellCastEvents={SPELL_CAST_START=1,SPELL_CAST_SUCCESS=1,SPELL_CREATE=1,SPELL_AURA_APPLIED=1}
 local band=bit.band
-local saDB={
+local saDB = db.spelllist
 
--- MAGE
-[118]="S", -- Polymorph(base)
-[28272]="S", -- Polymorph(pig)
-[28271]="S", -- Polymorph(turtle)
-[61305]="S", -- Polymorph(black cat)
-[61025]="S" , -- Polymorph(serpent)
-[61721]="S", -- Polymorph(rabbit)
-[61780]="S", -- Polymorph(turkey)
-[126819]="S", -- Polymorph(pig2)
-[161353]="S", -- Polymorph(polar bear cub)
-[161355]="S", -- Polymorph(penguin)
-[161354]="S", -- Polymorph(monkey)
-[161372]="S", -- Polymorph(turtle2)
-[45438]="NS", -- Ice Block
-[12472]="NS", -- Icy Veins
-[11958]="NS", -- Cold Snap
-[44572]="NS", -- Deep Freeze
-[113724]="S", -- Ring of Frost
-
--- SHAMAN
-[16188]="NS", -- Ancestral Swiftness
-[79206]="S", -- Spiritwalker's Grace
-[8143]="S", -- Temor Totem
-[8177]="S", -- Grounding Totem
-[108280]="S", -- Healing Tide Totem
-[114049]="NS", -- Ascendance
-[114050]="NS", -- Ascendance
-[114051]="NS", -- Ascendance
-[114052]="NS", -- Ascendance
-[51514]="S", -- Hex
-[108269]="NS", -- Capacitor Totem
-
--- HUNTER
-[1499]="S", -- Freezing Trap
-[19574]="NS", -- Bestial Wrath
-[19386]="NS", -- Wyvern Sting
-
--- DRUID
-[132158]="S", -- Nature's Swiftness
-[29166]="NS", -- Innervate
-[33786]="S", -- Cyclone
-[108291]="NS", -- Heart of the wild
-[108292]="NS", -- Heart of the wild
-[108293]="NS", -- Heart of the wild
-[108294]="NS", -- Heart of the wild
-[33891]="NS", -- Incarnation Tree of Life
-[102543]="NS", -- Incarnation King of the Jungle
-[102560]="NS", -- Incarnation Chosen of Elune
-[22812]="S", -- Barksin
---[69369]="P", -- Predatory Swiftness
-
--- PRIEST
-[605]="NS", -- Dominate Mind
-[586]="NS", -- Fade
-[10060]="S", -- Power Infusion
-[6346]="S", -- Fear Ward
-[8122]="NS", -- Psychic Scream
-[33206]="NS", -- Pain Suppression
---[17]="S", -- TEST
-
--- DEATHKNIGHT
-[108200]="NS", -- Remorseless Winter
-[77606]="S", -- Dark Simulacrum
-[108201]="NS", -- Desecrated Ground
-
--- WARRIOR
-[23920]="S", --Spell Reflection
-[114028]="S", --Mass Spell Reflection
-[1719]="NS", -- Recklesness
-[107570]="S", --Storm Bolt
-
--- ROGUE
-[51713]="NS", -- Shadow Dance
-[76577]="NS", -- Smoke Bomb
-[31224]="NS", -- Cloak of Shadows
-
--- WARLOCK
-[5782]="S", -- Fear
-[108482]="NS", --Unbound Will
-[113861]="NS", -- Dark Souls
-[113858]="NS", -- Dark Souls
-[113860]="NS", -- Dark Souls
-
--- MONK
-[122470]="NS", -- Touch of Karma
-
--- PALADIN
-[1022]="S", -- Hand of Protection
-[6940]="S", -- Hand of Sacrifice
-[31821]="NS", -- Devotion Aura
-[31884]="NS", -- Avenging Wrath
-[31842]="NS", -- Avenging Wrath
-[1044]="NS", -- Hand of Freedom
-[20066]="S", -- Repentance
-[642]="NS" -- Divine Shield
-}
 local soundDB={NS=0,S=1,P=0,PS=1}
 local COMBAT_LOG=COMBATLOG_HOSTILE
 -- local COMBAT_LOG=COMBATLOG_PLAYER
-sa=CreateFrame("FRAME")
+self.sa=CreateFrame("FRAME")
+sa = self.sa
 local sat=sa:CreateTexture(nil,"BACKGROUND")
-sat:SetAllPoints(sa)
+sat:SetAllPoints(self.sa)
 sat:SetTexCoord(0.07,0.93,0.07,0.93)
 sa:SetPoint("CENTER",UIParent,"CENTER",0,100)
-sa:SetWidth(100)
-sa:SetHeight(100)
+sa:SetWidth(db.iconsize)
+sa:SetHeight(db.iconsize)
 sa:SetScript("OnEvent",function(self,event,...) self[event](self,...) end)
 sa:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 currenticon=0
@@ -178,6 +182,8 @@ end
 function SpellAlerter:OnDisable()
 end
 function SpellAlerter:ApplySettings()
+	self.sa:SetWidth(db.iconsize)
+	self.sa:SetHeight(db.iconsize)
 end
 
 -- OPTIONS
@@ -204,6 +210,12 @@ function SpellAlerter:GetOptions()
 				name="Enable",
 				desc="Enable the module",
 				order=1,
+			},
+			iconsize={
+				type="range",
+				name="Icon Size",
+				min=0,max=500,step=1,bigStep=2,softMax=500,
+				order=11
 			},
 			sa={
 				type="header",
