@@ -205,7 +205,7 @@ drt=CreateFrame("FRAME")
 drt:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 drt:SetScript("OnEvent",function(_,_,_,eventType,_,_,_,_,_,destGUID,_,_,_,spellID,_,_,auraType)
 	local unit
-	for i=1,5 do
+	for i=1,3 do
 		if destGUID==UnitGUID("arena"..i) then unit=i break end
 	end
 	-- if (UnitGUID("target")==destGUID) then unit=1 end -- debug
@@ -356,7 +356,7 @@ function DRTracker:GetOptions()
 			},
 			iconsize={
 				type="range",
-				name="Y",
+				name="Icon Size",
 				min=-500,max=500,step=1,bigStep=5,
 				order=12
 			},
