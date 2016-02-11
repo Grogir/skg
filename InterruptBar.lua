@@ -16,6 +16,7 @@ local Defaults={global={
 	x=-124,
 	y=-50,
 	size=30,
+	endsize=100,
 	marginx=1,
 	marginy=1,
 	spectoadd=65,
@@ -258,11 +259,12 @@ end
 
 function InterruptBar:ApplySettings()
 	self:Move(Database.x, Database.y, Database.marginx, Database.marginy, Database.size)
+	self.endcooldown:SetSize(Database.endsize,Database.endsize)
 end
 
 function InterruptBar:InitEndCooldownFrame(Frame)
 		Frame:SetPoint("CENTER", 0, 0)
-		Frame:SetSize(100, 100)
+		Frame:SetSize(Database.endsize, Database.endsize)
 		Frame.texture=Frame:CreateTexture(nil,"BORDER")
 		Frame.texture:SetAllPoints(Frame)
 		--local _,_,Texture=GetSpellInfo(114028)
@@ -645,6 +647,12 @@ function InterruptBar:GetOptions()
 				type="range",
 				name="Size",
 				min=5,max=100,step=1,bigStep=5,
+				order=13
+			},
+			endsize={
+				type="range",
+				name="Alert Icon Size",
+				min=5,max=200,step=1,bigStep=5,
 				order=13
 			},
 			maxline={
