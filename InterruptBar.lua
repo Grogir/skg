@@ -486,19 +486,6 @@ function InterruptBar:AddArenaSpec(ArenaEnemyCount)
 	end
 end
 
-<<<<<<< HEAD
-function InterruptBar:UpdateFrame(Frame, SpellId, SpellCD)
-    Frame:SetScript("OnEvent",function(_,_,_,Event,_,_,_,SourceFlags,_,_,_,_,_,ID)
-        if(Event=="SPELL_CAST_SUCCESS"and ID==SpellId)then
-            if bit.band(SourceFlags,0x40)==0x40 then --or bit.band(b,0x100)==0x100 or true then
-							-- 0x40 ==  COMBATLOG_OBJECT_REACTION_HOSTILE
-                self:Activatebtn(Frame.CD,GetTime(),SpellCD)
-            end
-        end
-    end)
-    Frame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-=======
-
 function InterruptBar:UpdateFrame(Frame, SpellId, SpellCD, UnitID)
 	Frame:SetScript("OnEvent",function(_,_,_,Event,_,SourceGUID,SourceName,SourceFlags,_,_,_,_,_,ID)
 		if(Event=="SPELL_CAST_SUCCESS"and ID==SpellId) then
@@ -516,7 +503,6 @@ function InterruptBar:UpdateFrame(Frame, SpellId, SpellCD, UnitID)
 			end
     end
   end)
->>>>>>> origin/master
 end
 
 function InterruptBar:IsSpecFoundForSpell(Spec, SpellSpecList)
