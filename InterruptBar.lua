@@ -475,6 +475,7 @@ function InterruptBar:CreateFrame(LineIndex, SpellId, CDInSecs, PosX, PosY)
 	end
 	Frame.CD:SetAllPoints(Frame)
 	Frame.CDInSecs = CDInSecs
+	Frame.CD.SpellID = SpellId
 	return Frame
 end
 
