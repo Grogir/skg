@@ -37,36 +37,48 @@ for i=1,10 do
 	portr:SetTexture("Interface\\Glues\\CHARACTERCREATE\\UI-CHARACTERCREATE-CLASSES")
 end
 function ShowRaidPortrait()
-	local hideall
-	if FlowContainer_GetUsedBounds(CompactRaidFrameContainer)>DefaultCompactUnitFrameSetupOptions.width+5 then hideall=1 end
-    for i=1,10 do
-        local portr=_G["RaidMember"..i.."Portrait"]
-        local _,class=UnitClass("raid"..i)
-        if class and not hideall then
-			local member
-			if CompactRaidFrameContainer.groupMode=="flush" then
-				member=CompactRaidFrameContainer_GetUnitFrame(CompactRaidFrameContainer,"raid"..i,"raid")
-			else
-				for j=1,8 do
-					for k=1,5 do
-						local frame=_G["CompactRaidGroup"..j.."Member"..k]
-						if frame and frame.unit=="raid"..i then member=frame end
+	--local hideall
+	--if FlowContainer_GetUsedBounds(CompactRaidFrameContainer)>DefaultCompactUnitFrameSetupOptions.width+5 then
+	--	hideall=1
+	--end
+  for i=1,10 do
+      local portr=_G["RaidMember"..i.."Portrait"]
+      local _,class=UnitClass("raid"..i)
+      if class then -- and not hideall then
+				local member
+				if CompactRaidFrameContainer.groupMode=="flush" then
+					member=CompactRaidFrameContainer_GetUnitFrame(CompactRaidFrameContainer,"raid"..i,"raid")
+				else
+					for j=1,8 do
+						for k=1,5 do
+							local frame=_G["CompactRaidGroup"..j.."Member"..k]
+							if frame and frame.unit=="raid"..i then
+								member=frame
+							end
+						end
 					end
 				end
-			end
-			if member and member:IsShown() then
-				local _,y=member:GetSize()
-				portr:SetSize(y-1,y-1)
-				portr:SetPoint("TOPRIGHT",member,"TOPLEFT",-1,0)
-				
-				local t=CLASS_ICON_TCOORDS[class]
-				portr:SetTexture("Interface\\Glues\\CHARACTERCREATE\\UI-CHARACTERCREATE-CLASSES")
-				portr:SetTexCoord(unpack(t))
-				if portr.lc then
-					portr.lc:Show()
-					SetPortrait("raid"..i,portr:GetName(),portr.lc)
+				if member then --and member:IsShown() then
+					local _,y=member:GetSize()
+					portr:SetSize(y-1,y-1)
+					portr:SetPoint("TOPRIGHT",member,"TOPLEFT",-1,0)
+
+					local t=CLASS_ICON_TCOORDS[class]
+					portr:SetTexture("Interface\\Glues\\CHARACTERCREATE\\UI-CHARACTERCREATE-CLASSES")
+					portr:SetTexCoord(unpack(t))
+					if portr.lc then
+						portr.lc:Show()
+						SetPortrait("raid"..i,portr:GetName(),portr.lc)
+					else
+						portr:Show()
+					end
 				else
-					portr:Show()
+					portr:Hide()
+					if portr.lc then
+						portr.lc:Hide()
+						portr.lc.cd:Hide()
+						portr.lc.tex:Hide()
+					end
 				end
 			else
 				portr:Hide()
@@ -75,17 +87,9 @@ function ShowRaidPortrait()
 					portr.lc.cd:Hide()
 					portr.lc.tex:Hide()
 				end
-			end
-		else
-			portr:Hide()
-			if portr.lc then
-				portr.lc:Hide()
-				portr.lc.cd:Hide()
-				portr.lc.tex:Hide()
-			end
-        end
-    end
-end
+      end
+  	end
+	end
 function HideRaidPortrait()
     for i=1,10 do
         local portr=_G["RaidMember"..i.."Portrait"]

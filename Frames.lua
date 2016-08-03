@@ -13,7 +13,7 @@ local db
 
 local defaults={global={
 	enabled=true,
-	
+
 	playerx=-260,
 	playery=-120,
 	playerscale=1.0,
@@ -23,12 +23,12 @@ local defaults={global={
 	focusx=450,
 	focusy=-260,
 	focusscale=0,
-	
+
 	targettargetx=-35, -- -20
 	targettargety=-10, -- -15
 	focustargetx=-35,
 	focustargety=-10,
-	
+
 	runeframex=28,
 	runeframey=25,
 	runeframescale=1.3,
@@ -36,7 +36,7 @@ local defaults={global={
 	totemframey=-75,
 	petframex=30,
 	petframey=-85,
-	
+
 	arenax=290,
 	arenay=80,
 	arenaspace=50,
@@ -50,13 +50,13 @@ local defaults={global={
 	arenanamey=10,
 	arenapetx=45,
 	arenapety=-40,
-	
+
 	partyx=-250,
 	partyy=80,
 	partyspace=65,
 	partyscale=1.5,
 	partytextsize=8,
-	
+
 	bossx=-260,
 	bossy=-120,
 	bossspace=75,
@@ -64,7 +64,7 @@ local defaults={global={
 	bosscastx=10,
 	bosscasty=28,
 	bosscastscale=1.0,
-	
+
 	hideart=true,
 	disabledamage=true,
 	disablewhisp=true,
@@ -80,6 +80,8 @@ local defaults={global={
 	containerx=0,
 	containery=10,
 	objtrackerx=10,
+
+	showframeportrait=true
 }}
 local arenatest=false
 local partytest=false
@@ -130,22 +132,30 @@ function Frames:UnitFrames()
 	FocusFrameToT:SetUserPlaced(true)
 
 	local _,class=UnitClass("player")
-	if class=="DEATHKNIGHT" then
+	if RuneFrame:IsShown() then
 		RuneFrame:ClearAllPoints()
 		RuneFrame:SetPoint("TOP",PlayerFrame,"BOTTOM",db.runeframex,db.runeframey)
 		if db.runeframescale>0 then RuneFrame:SetScale(db.runeframescale) end
-		TotemFrame:ClearAllPoints()
-		TotemFrame:SetPoint("TOPLEFT",PlayerFrame,"TOPLEFT",db.totemframex,db.totemframey)
-		TotemFrame.SetPoint=nop
-		PetFrame:ClearAllPoints()
-		PetFrame:SetPoint("TOPLEFT",PlayerFrame,"TOPLEFT",db.petframex,db.petframey)
+	elseif ShardBarFrame:IsShown() then
+		ShardBarFrame:ClearAllPoints()
+		ShardBarFrame:SetPoint("TOP",PlayerFrame,"BOTTOM",db.runeframex,db.runeframey)
+		if db.runeframescale>0 then ShardBarFrame:SetScale(db.runeframescale) end
+	-- elseif PaladinPowerBar:IsShown() then
+		-- PaladinPowerBar:ClearAllPoints()
+		-- PaladinPowerBar:SetPoint("TOP",PlayerFrame,"BOTTOM",db.runeframex,db.runeframey)
+		-- if db.runeframescale>0 then PaladinPowerBar:SetScale(db.runeframescale) end
 	end
-
+	TotemFrame:ClearAllPoints()
+	TotemFrame:SetPoint("TOPLEFT",PlayerFrame,"TOPLEFT",db.totemframex,db.totemframey)
+	TotemFrame.SetPoint=nop
+	PetFrame:ClearAllPoints()
+	PetFrame:SetPoint("TOPLEFT",PlayerFrame,"TOPLEFT",db.petframex,db.petframey)
+	PetFrame.SetPoint=nop
 	-- Arena frames
 	local foctex="Interface\\TARGETINGFRAME\\UI-TargetingFrame-NoLevel"
-	for i=1,5 do
+	for i=1,3 do
 		local pt,rel,relpt,x,y
-		
+
 		for j,framename in ipairs({"ArenaEnemyFrame"..i,"ArenaPrepFrame"..i}) do
 			local frame=_G[framename]
 			local tex=_G[framename.."Texture"]
@@ -157,7 +167,7 @@ function Frames:UnitFrames()
 			local healthbartext=_G[framename.."HealthBarText"]
 			local manabar=_G[framename.."ManaBar"]
 			local manabartext=_G[framename.."ManaBarText"]
-			
+
 			frame:ClearAllPoints()
 			if db.arenascale>0 then frame:SetScale(db.arenascale) end
 			if not frame.SetPointNew then
@@ -166,7 +176,7 @@ function Frames:UnitFrames()
 			end
 			frame:SetPointNew("CENTER",UIParent,"CENTER",db.arenax,db.arenay-(i-1)*db.arenaspace)
 			frame:SetUserPlaced(true)
-			
+
 			if db.arenatexture then
 				_,rel,_,_,_=tex:GetPoint()
 				tex:SetSize(156,78)
@@ -175,20 +185,20 @@ function Frames:UnitFrames()
 				tex:SetTexture(foctex)
 				tex:SetTexCoord(0,1,0,1)
 				tex:SetAlpha(1)
-				
+
 				portrait:SetSize(40,40)
 				pt,rel,relpt,x,y=portrait:GetPoint()
 				portrait:SetPoint(pt,rel,relpt,3,6) -- x+14,y+10
-			
+
 				pt,rel,relpt,x,y=back:GetPoint()
 				back:SetPoint(pt,rel,relpt,2,0) -- x,y+10
 				back:SetHeight(25)
-				
+
 				pt,rel,relpt,x,y=spec:GetPoint()
 				spec:SetPoint(pt,rel,relpt,5,-1) -- x+5,y-5
 				pt,rel,relpt,x,y=specportrait:GetPoint()
 				specportrait:SetPoint(pt,rel,relpt,9,-5) -- x+7,y-7
-				
+
 				x,y=healthbar:GetSize()
 				healthbar:SetSize(71,7) -- x+1,y-1
 				x,y=manabar:GetSize()
@@ -198,7 +208,7 @@ function Frames:UnitFrames()
 				manabartext:SetFont("Fonts\\FRIZQT__.TTF",8,"OUTLINE")
 				manabartext:SetPoint("CENTER",manabar)
 			end
-		
+
 			if arenatest and j==1 then
 				frame:Show()
 				hbf(frame,100)
@@ -209,11 +219,11 @@ function Frames:UnitFrames()
 				SetPortraitToTexture(specportrait,tex)
 			end
 		end
-		
+
 		local cast=_G["ArenaEnemyFrame"..i.."CastingBar"]
 		local name=_G["ArenaEnemyFrame"..i.."Name"]
 		local pet=_G["ArenaEnemyFrame"..i.."PetFrame"]
-		
+
 		pt,rel,relpt,x,y=cast:GetPoint()
 		cast:SetPoint(pt,rel,relpt,db.arenacastx,db.arenacasty)
 		if db.arenacastscale>0 then cast:SetScale(db.arenacastscale) end
@@ -222,7 +232,7 @@ function Frames:UnitFrames()
 		name:SetPoint("CENTER",name:GetParent(),"CENTER",db.arenanamex,db.arenanamey)
 		pt,rel,relpt,x,y=pet:GetPoint()
 		pet:SetPoint(pt,rel,relpt,db.arenapetx,db.arenapety)
-		
+
 		if arenatest then
 			cast:Show()
 			cast:SetAlpha(0.5)
@@ -234,7 +244,8 @@ function Frames:UnitFrames()
 	if arenatest then ArenaEnemyFrames:Show() else ArenaEnemyFrames:Hide() end
 	-- ArenaEnemyBackground:SetPoint("RIGHT", "ArenaEnemyFrame1", "RIGHT", 30, 0)
 	-- /run GetNumArenaOpponents=function() return 3 end UpdateArenaEnemyBackground(1)
-
+	--local raidparty = _G["RaidMemberFrame1"]
+	--print(raidparty);
 	-- Party frames
 	for i=1,4 do
 		local party=_G["PartyMemberFrame"..i]
@@ -247,7 +258,7 @@ function Frames:UnitFrames()
 		party.manabar.TextString:SetFont("Fonts\\FRIZQT__.TTF",db.partytextsize,"OUTLINE")
 		party.manabar.TextString:SetPoint("CENTER",party.manabar)
 		party.name:SetFont("Fonts\\FRIZQT__.TTF",db.partytextsize)
-		
+
 		if partytest then
 			party:Show()
 			hbf(party,100)
@@ -258,8 +269,24 @@ function Frames:UnitFrames()
 		else
 			party:Hide()
 		end
+		-- TODO(flo): fix this when disabling it on fly!
+		if db.showframeportrait then
+			hooksecurefunc("UnitFramePortrait_Update",function(self)
+					if self.portrait then
+						if UnitIsPlayer(self.unit) then
+							local t = CLASS_ICON_TCOORDS[select(2, UnitClass(self.unit))]
+							if t then
+								self.portrait:SetTexture("Interface\\TargetingFrame\\UI-Classes-Circles")
+								self.portrait:SetTexCoord(unpack(t))
+							end
+						else
+							self.portrait:SetTexCoord(0,1,0,1)
+						end
+					end
+			end)
+		end
 	end
-	
+
 	-- Boss frames
 	for i=1,5 do
 		local boss=_G["Boss"..i.."TargetFrame"]
@@ -334,13 +361,13 @@ function Frames:Misc()
 	ExtraActionBarFrame:SetPoint("CENTER",UIParent,"CENTER",db.eabx,db.eaby)
 	ExtraActionBarFrame.ignoreFramePositionManager=true
 	-- /run ExtraActionBarFrame:Show() ExtraActionButton1:Show() ExtraActionButton1.style:SetTexture("Interface\\ExtraButton\\Default") ExtraActionBarFrame.outro:Stop() ExtraActionBarFrame.intro:Play()
-	
+
 	-- Power Bar Alt
 	PlayerPowerBarAlt:ClearAllPoints()
 	PlayerPowerBarAlt:SetPoint("CENTER",UIParent,"CENTER",db.powerbaraltx,db.powerbaralty)
 	PlayerPowerBarAlt.ignoreFramePositionManager=true
 	-- /run PlayerPowerBarAlt:Show() PlayerPowerBarAlt:SetSize(256,64) PlayerPowerBarAlt.frame:SetTexture("Interface/UnitPowerBarAlt/Fire_Horizontal_Frame")
-	
+
 	-- FramePositionManager
 	-- provoque taint dans UIParent et ContainerFrame
 	UIPARENT_MANAGED_FRAME_POSITIONS.CONTAINER_OFFSET_X.baseX=db.containerx
@@ -545,6 +572,13 @@ function Frames:GetOptions()
 						softMin=-100,softMax=100,step=1,bigStep=5,
 						order=42
 					},
+					classportrait={
+						type="toggle",
+						name="Class Portrait",
+						get=function() return db.showframeportrait end,
+						set=function(i,v) db.showframeportrait=v self:ApplySettings() end,
+						order=43
+					},
 				}
 			},
 			resource={
@@ -560,13 +594,13 @@ function Frames:GetOptions()
 					runeframex={
 						type="range",
 						name="X",
-						softMin=-100,softMax=100,step=1,bigStep=1,
+						softMin=-1000,softMax=1000,step=1,bigStep=1,
 						order=1
 					},
 					runeframey={
 						type="range",
 						name="Y",
-						softMin=-100,softMax=100,step=1,bigStep=1,
+						softMin=-1000,softMax=1000,step=1,bigStep=1,
 						order=2
 					},
 					runeframescale={
@@ -583,13 +617,13 @@ function Frames:GetOptions()
 					petframex={
 						type="range",
 						name="X",
-						softMin=-200,softMax=200,step=1,bigStep=1,
+						softMin=-1000,softMax=1000,step=1,bigStep=1,
 						order=11
 					},
 					petframey={
 						type="range",
 						name="Y",
-						softMin=-200,softMax=200,step=1,bigStep=1,
+						softMin=-1000,softMax=1000,step=1,bigStep=1,
 						order=12
 					},
 					totemframe={
@@ -600,13 +634,13 @@ function Frames:GetOptions()
 					totemframex={
 						type="range",
 						name="X",
-						softMin=-200,softMax=200,step=1,bigStep=1,
+						softMin=-1000,softMax=1000,step=1,bigStep=1,
 						order=21
 					},
 					totemframey={
 						type="range",
 						name="Y",
-						softMin=-200,softMax=200,step=1,bigStep=1,
+						softMin=-1000,softMax=1000,step=1,bigStep=1,
 						order=22
 					},
 				}

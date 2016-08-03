@@ -29,7 +29,7 @@ local defaults={global={
 	listanchor="CENTER",
 	parent="UIParent",
 	paranchor="CENTER",
-	
+
 	auras={},
 	lists={},
 }}
@@ -79,7 +79,7 @@ function AuraTracker:OnEnable()
 	self:RegisterEvent("PLAYER_TARGET_CHANGED","OnAura")
 	local auralist=AuraTracker.options.args.auragroup.args
 	for i,auradb in pairs(db.auras) do
-		if (not auradb.class or auradb.class and auradb.class==class) and 
+		if (not auradb.class or auradb.class and auradb.class==class) and
 		(not auradb.spec or auradb.spec and auradb.spec==spec) then
 			local aura=CreateFrame("FRAME",auradb.name,_G[db.parent])
 			table.insert(self.auras,aura)
@@ -105,7 +105,7 @@ function AuraTracker:OnEnable()
 				aura.alpha=db[string.sub(auradb.alphatype,3)]
 			end
 			aura:SetAlpha(aura.alpha)
-			if auradb.conds then 
+			if auradb.conds then
 				aura.conds={}
 				for j,conddb in pairs(auradb.conds) do
 					local cond={
@@ -123,11 +123,11 @@ function AuraTracker:OnEnable()
 				aura.tcvalue=aura:CreateFontString(nil,"OVERLAY")
 				aura.tcvalue:SetPoint("BOTTOMRIGHT",aura,"TOPRIGHT",0,0)
 				aura.tcvalue:SetFont("Fonts\\FRIZQT__.TTF",aura:GetWidth()/4,"OUTLINE")
-				
+
 				aura.tctarget=(aura.cd.txt or aura.cd or aura):CreateFontString(nil,"OVERLAY")
 				aura.tctarget:SetPoint("TOPRIGHT",aura,"TOPRIGHT",0,1)
 				aura.tctarget:SetFont("Fonts\\FRIZQT__.TTF",aura:GetWidth()/4,"OUTLINE")
-				
+
 				local cache=snapshot.cache[icon]
 				aura:SetScript("OnUpdate",function()
 					local val=cache.valueget or cache.value
@@ -497,13 +497,13 @@ local function NewAura(name)
 			x={
 				type="range",
 				name="X",
-				softMin=-400,softMax=400,step=1,bigStep=20,--10
+				softMin=-1000,softMax=1000,step=1,bigStep=20,--10
 				order=16
 			},
 			y={
 				type="range",
 				name="Y",
-				softMin=-400,softMax=400,step=1,bigStep=20,--10
+				softMin=-1000,softMax=1000,step=1,bigStep=20,--10
 				order=17
 			},
 			nl1={
@@ -619,7 +619,7 @@ local function NewAura(name)
 	end
 	-- table.insert(AuraTracker.options.args.auragroup.args,new)
 	-- LibStub("AceConfigRegistry-3.0"):NotifyChange(AddonName)
-	
+
 end
 function AuraTracker:LoadAuras()
 	for a,b in pairs(db.auras) do

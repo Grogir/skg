@@ -12,6 +12,9 @@ local db
 
 local defaults={global={
 	enabled=true,
+	x=-100,
+	y=20,
+	iconsize=30,
 }}
 
 function DRTracker:OnInitialize()
@@ -201,17 +204,18 @@ SpellDatabase={
 [45438]="def", --Bloc de glace
 [642]="def" --Bouclier divin
 }
-driconsize=25 drduration=18 drtimeout=28
+drduration=18 drtimeout=28
 drdebuff="DEBUFF" -- BUFF pour debug
 drignore={rndroot=1,nodr=1,buff=1,aura=1,def=1,immune=1,playerbuff=1}
 drt=CreateFrame("FRAME")
 drt:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 drt:SetScript("OnEvent",function(_,_,_,eventType,_,_,_,_,_,destGUID,_,_,_,spellID,_,_,auraType)
 	local unit
-	for i=1,5 do
+	for i=1,3 do
 		if destGUID==UnitGUID("arena"..i) then unit=i break end
 	end
 	-- if (UnitGUID("target")==destGUID) then unit=1 end -- debug
+	-- if SpellDatabase[spellID] then drt:Applied(1, spellID) end -- debug
 	if unit and SpellDatabase[spellID] and auraType==drdebuff and not drignore[SpellDatabase[spellID]] then
 		if eventType=="SPELL_AURA_REFRESH" or eventType=="SPELL_AURA_APPLIED" then
 			drt:Applied(unit,spellID)
@@ -221,20 +225,29 @@ drt:SetScript("OnEvent",function(_,_,_,eventType,_,_,_,_,_,destGUID,_,_,_,spellI
 	end
 end)
 drframe={}
-for i=1,5 do
-	drframe[i]=CreateFrame("Frame",nil,_G["ArenaEnemyFrame"..i])
-	drframe[i]:SetPoint("TOPLEFT",_G["ArenaEnemyFrame"..i],"TOPRIGHT",75,0)
-	drframe[i]:SetSize(driconsize,driconsize)
+for i=1,3 do
+	-- drframe[i]=CreateFrame("Frame",nil,_G["ArenaEnemyFrame"..i])
+	drframe[i]=CreateFrame("Frame")
+	drframe[i]:SetPoint("TOPLEFT",_G["ArenaEnemyFrame"..i],"TOPLEFT",db.x,db.y)
+	drframe[i]:SetSize(db.iconsize,db.iconsize)
+	drframe[i].t = drframe[i]:CreateTexture(nil, "BORDER")
+	drframe[i].t:SetAllPoints();
+	drframe[i].t:Hide();
+	local texture = select(4, GetSpecializationInfo(GetSpecialization()))
+	SetPortraitToTexture(drframe[i].t,texture)
 	drframe[i].tracker={}
 end
 function drt:GetTrack(unit,cat)
 	local track=drframe[unit].tracker[cat]
 	if not track then
-		track=CreateFrame("Frame",nil,drframe[unit])
+		-- track=CreateFrame("Frame",nil,drframe[unit])
+		track=CreateFrame("Frame")
 		drframe[unit].tracker[cat]=track
-		track:SetPoint("CENTER",drframe[unit],"CENTER",0,0)
-		track:SetSize(driconsize,driconsize)
-		track.cd=CreateFrame("Cooldown",nil,track)
+		-- track:SetPoint("CENTER",drframe[unit],"CENTER",0,0)
+		track:SetPoint("CENTER",0,0)
+		track:SetSize(db.iconsize,db.iconsize)
+		-- track.cd=CreateFrame("Cooldown",nil,track)
+		track.cd=CreateFrame("Cooldown",nil)
 		track.cd:SetAllPoints(track)
 		track.t=track:CreateTexture(nil,"BORDER")
 		track.t:SetAllPoints()
@@ -281,7 +294,7 @@ function drt:Layout(unit)
 		track:ClearAllPoints()
 		if track.active>0 then
 			track:SetPoint("CENTER",drframe[unit],"CENTER",x,0)
-			x=x+driconsize
+			x=x+db.iconsize
 		end
 	end
 end
@@ -289,10 +302,28 @@ end
 end
 function DRTracker:OnDisable()
 end
+
 function DRTracker:ApplySettings()
+	for i=1,3 do
+		drframe[i]:SetSize(db.iconsize,db.iconsize)
+		drframe[i].t:Show()
+		drframe[i]:SetPoint("TOPLEFT",_G["ArenaEnemyFrame"..i],"TOPLEFT",db.x,db.y)
+	end
 end
 
 -- OPTIONS
+
+local function ShowPos()
+	for i=1,3 do
+		drframe[i].t:Show()
+	end
+end
+
+local function HidePos()
+	for i=1,3 do
+		drframe[i].t:Hide()
+	end
+end
 
 local function getter(info)
 	return db[info.arg or info[#info]]
@@ -316,6 +347,36 @@ function DRTracker:GetOptions()
 				name="Enable",
 				desc="Enable the module",
 				order=1,
+			},
+			x={
+				type="range",
+				name="X",
+				min=-500,max=500,step=1,bigStep=5,
+				order=11,
+			},
+			y={
+				type="range",
+				name="Y",
+				min=-500,max=500,step=1,bigStep=5,
+				order=12
+			},
+			iconsize={
+				type="range",
+				name="Icon Size",
+				min=-500,max=500,step=1,bigStep=5,
+				order=12
+			},
+			showposition={
+				type="execute",
+				name="Show Position",
+				func=ShowPos,
+				order=13
+			},
+			hideposition={
+				type="execute",
+				name="Hide Position",
+				func=HidePos,
+				order=14
 			},
 			drt={
 				type="header",

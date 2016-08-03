@@ -13,7 +13,7 @@ local db
 
 local defaults={global={
 	enabled=true,
-	
+
 	iconsize=24,
 	offx=20,
 	offy=0,
@@ -32,7 +32,7 @@ function ComboPoints:OnInitialize()
 	self:SetEnabledState(db.enabled)
 	self.options=self:GetOptions()
 	SKG:RegisterModuleOptions("ComboPoints",self.options,"L ComboPoints")
-	
+
 	self:RegisterEvent("PLAYER_ENTERING_WORLD","Reload") --PLAYER_LOGIN
 	self:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED","Reload")
 end
