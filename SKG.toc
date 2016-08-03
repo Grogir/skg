@@ -1,4 +1,4 @@
-## Interface: 60200
+## Interface: 70000
 ## Title: SKG
 ## Author: Grogir & Khujara
 ## Version: 1.00

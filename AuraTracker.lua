@@ -131,6 +131,7 @@ function AuraTracker:OnEnable()
 				local cache=snapshot.cache[icon]
 				aura:SetScript("OnUpdate",function()
 					local val=cache.valueget or cache.value
+					if not val then return end
 					aura.tcvalue:SetText(floor(100*val+.5))
 					local tar=cache[UnitGUID("target")]
 					if tar then

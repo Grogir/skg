@@ -50,14 +50,14 @@ local Defaults={global={
 			{
 				{{250, 251, 252}, 47476, 60}, -- Strangulate
 				{{250, 251, 252}, 47528, 15}, -- Mind Freeze
-				{{250, 251, 252}, 47481, 60}, -- Gnaw
-				{{250, 251, 252}, 91802, 30}, -- Shambling Rush
+				{{250, 251, 252}, 91800, 60}, -- Gnaw --pas ok
+				{{250, 251, 252}, 91802, 30}, -- Shambling Rush --pas ok
 				{{250, 251, 252}, 108194, 30}, -- Asphyxiate
 				{{250, 251, 252}, 49576, 25}, -- Death Grip
 				{{250, 251, 252}, 48707, 45}, -- Anti-magic shell
 				{{250, 251, 252}, 48743, 120}, -- Death Pact
 				{{250, 251, 252}, 48792, 180}, -- Icebound Fortitude
-				{{250, 251, 252}, 49028, 90}, -- Dancing Rune Weapon
+				{{250, 251, 252}, 49028, 90}, -- Dancing Rune Weapon --pas ok
 				{{250, 251, 252}, 49039, 120}, -- Lichborne
 				{{250, 251, 252}, 51052, 120}, -- Anti magi zone
 				{{250, 251, 252}, 77606, 60} -- Dark Simulacrum
@@ -351,7 +351,7 @@ end
 function InterruptBar:UpdateFrame(Frame, SpellId, SpellCD)
     Frame:SetScript("OnEvent",function(_,_,_,Event,_,_,_,SourceFlags,_,_,_,_,_,ID)
         if(Event=="SPELL_CAST_SUCCESS"and ID==SpellId)then
-            if bit.band(SourceFlags,0x40)==0x40 then --or bit.band(b,0x100)==0x100 then
+            if bit.band(SourceFlags,0x40)==0x40 then --or bit.band(b,0x100)==0x100 or true then
 							-- 0x40 ==  COMBATLOG_OBJECT_REACTION_HOSTILE
                 self:Activatebtn(Frame.CD,GetTime(),SpellCD)
             end

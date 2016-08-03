@@ -168,38 +168,38 @@ end)
 
 -- NAMEPLATES
 
-plates=CreateFrame("Frame")
-plates:RegisterEvent("PLAYER_ENTERING_WORLD")
-plates:SetScript("OnEvent",function(self)
-	if not self.init then
-		self.init=true
-		WorldFrame:SetScale(0.8)
-		hooksecurefunc("CombatText_UpdateDisplayedMessages",function()
-			COMBAT_TEXT_SPACING=COMBAT_TEXT_SPACING*0.8
-			COMBAT_TEXT_MAX_OFFSET=COMBAT_TEXT_MAX_OFFSET*0.8
-			COMBAT_TEXT_LOCATIONS.startY=COMBAT_TEXT_LOCATIONS.startY*0.8
-			COMBAT_TEXT_LOCATIONS.endY=(COMBAT_TEXT_LOCATIONS.endY*0.8+COMBAT_TEXT_LOCATIONS.startY)*0.5
-			CombatText_ClearAnimationList()
-		end)
-		COMBAT_TEXT_SCROLLSPEED=1
-		COMBAT_TEXT_FADEOUT_TIME=0
-	end
-end)
-plates.num=-1
-plates.elapsed=0
-plates:SetScript("OnUpdate",function(self,elapsed)
-	self.elapsed=self.elapsed+elapsed
-	if WorldFrame:GetNumChildren()~=self.num or self.elapsed>0.1 then
-		self.num=WorldFrame:GetNumChildren()
-		self.elapsed=0
-		local t={WorldFrame:GetChildren()}
-		for i,f in pairs(t) do
-			if f:GetBackdrop() and f:GetBackdrop().bgFile=="Interface\\Tooltips\\ChatBubble-Background" then
-				f:SetScale(1.25)
-			end
-		end
-	end
-end)
+-- plates=CreateFrame("Frame")
+-- plates:RegisterEvent("PLAYER_ENTERING_WORLD")
+-- plates:SetScript("OnEvent",function(self)
+	-- if not self.init then
+		-- self.init=true
+		-- WorldFrame:SetScale(0.8)
+		-- hooksecurefunc("CombatText_UpdateDisplayedMessages",function()
+			-- COMBAT_TEXT_SPACING=COMBAT_TEXT_SPACING*0.8
+			-- COMBAT_TEXT_MAX_OFFSET=COMBAT_TEXT_MAX_OFFSET*0.8
+			-- COMBAT_TEXT_LOCATIONS.startY=COMBAT_TEXT_LOCATIONS.startY*0.8
+			-- COMBAT_TEXT_LOCATIONS.endY=(COMBAT_TEXT_LOCATIONS.endY*0.8+COMBAT_TEXT_LOCATIONS.startY)*0.5
+			-- CombatText_ClearAnimationList()
+		-- end)
+		-- COMBAT_TEXT_SCROLLSPEED=1
+		-- COMBAT_TEXT_FADEOUT_TIME=0
+	-- end
+-- end)
+-- plates.num=-1
+-- plates.elapsed=0
+-- plates:SetScript("OnUpdate",function(self,elapsed)
+	-- self.elapsed=self.elapsed+elapsed
+	-- if WorldFrame:GetNumChildren()~=self.num or self.elapsed>0.1 then
+		-- self.num=WorldFrame:GetNumChildren()
+		-- self.elapsed=0
+		-- local t={WorldFrame:GetChildren()}
+		-- for i,f in pairs(t) do
+			-- if f:GetBackdrop() and f:GetBackdrop().bgFile=="Interface\\Tooltips\\ChatBubble-Background" then
+				-- f:SetScale(1.25)
+			-- end
+		-- end
+	-- end
+-- end)
 
 -- TC
 
@@ -212,8 +212,8 @@ function snapshot:Calc()
 	if cp==0 then cp=5 end
 	local mult=1
 	if UnitBuff("player","Fureur du tigre") then mult=mult*1.15 end
-	if UnitBuff("player","Rugissement sauvage") then mult=mult*1.4 end
-	if UnitBuff("player","Griffes de sang") or GetTime()-snapshot.removed[145152]<0.05 then mult=mult*1.3 end
+	if UnitBuff("player","Rugissement sauvage") then mult=mult*1.25 end
+	if UnitBuff("player","Griffes de sang") or GetTime()-snapshot.removed[145152]<0.05 then mult=mult*1.4 end
 	local rakemult=1
 	if UnitBuff("player","Incarnation : Roi de la jungle") or UnitBuff("player","Rôder") or GetTime()-snapshot.removed[5215]<0.05 or UnitBuff("player","Camouflage dans l'ombre") or GetTime()-snapshot.removed[58984]<0.05 then rakemult=2 end
 
