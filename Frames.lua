@@ -29,13 +29,13 @@ local defaults={global={
 	focustargetx=-35,
 	focustargety=-10,
 
-	runeframex=28,
-	runeframey=25,
-	runeframescale=1.3,
-	totemframex=28,
-	totemframey=-75,
-	petframex=30,
-	petframey=-85,
+	runeframex=54,
+	runeframey=34,
+	runeframescale=1,
+	petframex=60,
+	petframey=-75,
+	totemframex=99,
+	totemframey=38,
 
 	arenax=290,
 	arenay=80,
@@ -136,21 +136,22 @@ function Frames:UnitFrames()
 		RuneFrame:ClearAllPoints()
 		RuneFrame:SetPoint("TOP",PlayerFrame,"BOTTOM",db.runeframex,db.runeframey)
 		if db.runeframescale>0 then RuneFrame:SetScale(db.runeframescale) end
-	elseif ShardBarFrame:IsShown() then
-		ShardBarFrame:ClearAllPoints()
-		ShardBarFrame:SetPoint("TOP",PlayerFrame,"BOTTOM",db.runeframex,db.runeframey)
-		if db.runeframescale>0 then ShardBarFrame:SetScale(db.runeframescale) end
-	-- elseif PaladinPowerBar:IsShown() then
-		-- PaladinPowerBar:ClearAllPoints()
-		-- PaladinPowerBar:SetPoint("TOP",PlayerFrame,"BOTTOM",db.runeframex,db.runeframey)
-		-- if db.runeframescale>0 then PaladinPowerBar:SetScale(db.runeframescale) end
+	-- elseif WarlockPowerFrame:IsShown() then
+		-- WarlockPowerFrame:ClearAllPoints()
+		-- WarlockPowerFrame:SetPoint("TOP",PlayerFrame,"BOTTOM",db.runeframex,db.runeframey)
+		-- if db.runeframescale>0 then WarlockPowerFrame:SetScale(db.runeframescale) end
+	-- elseif PaladinPowerBarFrame:IsShown() then
+		-- PaladinPowerBarFrame:ClearAllPoints()
+		-- PaladinPowerBarFrame:SetPoint("TOP",PlayerFrame,"BOTTOM",db.runeframex,db.runeframey)
+		-- if db.runeframescale>0 then PaladinPowerBarFrame:SetScale(db.runeframescale) end
 	end
-	TotemFrame:ClearAllPoints()
-	TotemFrame:SetPoint("TOPLEFT",PlayerFrame,"TOPLEFT",db.totemframex,db.totemframey)
-	TotemFrame.SetPoint=nop
 	PetFrame:ClearAllPoints()
-	PetFrame:SetPoint("TOPLEFT",PlayerFrame,"TOPLEFT",db.petframex,db.petframey)
-	PetFrame.SetPoint=nop
+	if not PetFrame.SetPointNew then PetFrame.SetPointNew=PetFrame.SetPoint PetFrame.SetPoint=nop end
+	PetFrame:SetPointNew("TOPLEFT",PlayerFrame,"TOPLEFT",db.petframex,db.petframey)
+	TotemFrame:ClearAllPoints()
+	if not TotemFrame.SetPointNew then TotemFrame.SetPointNew=TotemFrame.SetPoint TotemFrame.SetPoint=nop end
+	TotemFrame:SetPointNew("TOPLEFT",PlayerFrame,"BOTTOMLEFT",db.totemframex,db.totemframey)
+	
 	-- Arena frames
 	local foctex="Interface\\TARGETINGFRAME\\UI-TargetingFrame-NoLevel"
 	for i=1,3 do
@@ -170,10 +171,7 @@ function Frames:UnitFrames()
 
 			frame:ClearAllPoints()
 			if db.arenascale>0 then frame:SetScale(db.arenascale) end
-			if not frame.SetPointNew then
-				frame.SetPointNew=frame.SetPoint
-				frame.SetPoint=nop
-			end
+			if not frame.SetPointNew then frame.SetPointNew=frame.SetPoint frame.SetPoint=nop end
 			frame:SetPointNew("CENTER",UIParent,"CENTER",db.arenax,db.arenay-(i-1)*db.arenaspace)
 			frame:SetUserPlaced(true)
 
@@ -244,6 +242,7 @@ function Frames:UnitFrames()
 	if arenatest then ArenaEnemyFrames:Show() else ArenaEnemyFrames:Hide() end
 	-- ArenaEnemyBackground:SetPoint("RIGHT", "ArenaEnemyFrame1", "RIGHT", 30, 0)
 	-- /run GetNumArenaOpponents=function() return 3 end UpdateArenaEnemyBackground(1)
+	
 	--local raidparty = _G["RaidMemberFrame1"]
 	--print(raidparty);
 	-- Party frames
@@ -268,22 +267,6 @@ function Frames:UnitFrames()
 			party.portrait:SetTexCoord(unpack(tex))
 		else
 			party:Hide()
-		end
-		-- TODO(flo): fix this when disabling it on fly!
-		if db.showframeportrait then
-			hooksecurefunc("UnitFramePortrait_Update",function(self)
-					if self.portrait then
-						if UnitIsPlayer(self.unit) then
-							local t = CLASS_ICON_TCOORDS[select(2, UnitClass(self.unit))]
-							if t then
-								self.portrait:SetTexture("Interface\\TargetingFrame\\UI-Classes-Circles")
-								self.portrait:SetTexCoord(unpack(t))
-							end
-						else
-							self.portrait:SetTexCoord(0,1,0,1)
-						end
-					end
-			end)
 		end
 	end
 
@@ -313,6 +296,28 @@ function Frames:UnitFrames()
 			boss:Hide()
 		end
 	end
+	
+	if not self.classportrait then
+		self.classportrait=true
+		hooksecurefunc("UnitFramePortrait_Update",function(self)
+			if self.portrait then
+				if db.showframeportrait and UnitIsPlayer(self.unit) then
+					local t=CLASS_ICON_TCOORDS[select(2,UnitClass(self.unit))]
+					if t then
+						self.portrait:SetTexture("Interface\\TargetingFrame\\UI-Classes-Circles")
+						self.portrait:SetTexCoord(unpack(t))
+					end
+				else
+					self.portrait:SetTexCoord(0,1,0,1)
+				end
+			end
+		end)
+	end
+	UnitFramePortrait_Update(PlayerFrame)
+	UnitFramePortrait_Update(PartyMemberFrame1)
+	UnitFramePortrait_Update(PartyMemberFrame2)
+	UnitFramePortrait_Update(PartyMemberFrame3)
+	UnitFramePortrait_Update(PartyMemberFrame4)
 end
 
 function Frames:Misc()
@@ -403,22 +408,6 @@ function Frames:Misc()
 		v:SetVertexColor(db.framescolor,db.framescolor,db.framescolor)
 	end
 end
-
--- PORTRAIT
-
--- hooksecurefunc("UnitFramePortrait_Update",function(self)
-	-- if self.portrait then
-		-- if UnitIsPlayer(self.unit) then
-			-- local t=CLASS_ICON_TCOORDS[select(2,UnitClass(self.unit))]
-			-- if t then
-				-- self.portrait:SetTexture("Interface\\TargetingFrame\\UI-Classes-Circles")
-				-- self.portrait:SetTexCoord(unpack(t))
-			-- end
-		-- else
-			-- self.portrait:SetTexCoord(0,1,0,1)
-		-- end
-	-- end
--- end)
 
 hbf=function(f,n)
 	f.healthbar:SetMinMaxValues(0,100);
