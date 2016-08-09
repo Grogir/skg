@@ -81,7 +81,7 @@ local defaults={global={
 	containery=10,
 	objtrackerx=10,
 
-	showframeportrait=true
+	showframeportrait=false
 }}
 local arenatest=false
 local partytest=false
