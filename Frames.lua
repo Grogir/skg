@@ -70,18 +70,19 @@ local defaults={global={
 	disablewhisp=true,
 	disablechaninv=false,
 	minimaptweaks=true,
+	classportrait=false,
 	framescolor=0.4,
 	frameratex=0,
 	frameratey=-350,
 	eabx=0,
 	eaby=-335,
 	powerbaraltx=0,
-	powerbaralty=-335,
+	powerbaralty=-290,
 	containerx=0,
 	containery=10,
+	talkingheadx=0,
+	talkingheady=155,
 	objtrackerx=10,
-
-	showframeportrait=false
 }}
 local arenatest=false
 local partytest=false
@@ -301,7 +302,7 @@ function Frames:UnitFrames()
 		self.classportrait=true
 		hooksecurefunc("UnitFramePortrait_Update",function(self)
 			if self.portrait then
-				if db.showframeportrait and UnitIsPlayer(self.unit) then
+				if db.classportrait and UnitIsPlayer(self.unit) then
 					local t=CLASS_ICON_TCOORDS[select(2,UnitClass(self.unit))]
 					if t then
 						self.portrait:SetTexture("Interface\\TargetingFrame\\UI-Classes-Circles")
@@ -314,6 +315,8 @@ function Frames:UnitFrames()
 		end)
 	end
 	UnitFramePortrait_Update(PlayerFrame)
+	UnitFramePortrait_Update(TargetFrame)
+	UnitFramePortrait_Update(FocusFrame)
 	UnitFramePortrait_Update(PartyMemberFrame1)
 	UnitFramePortrait_Update(PartyMemberFrame2)
 	UnitFramePortrait_Update(PartyMemberFrame3)
@@ -368,9 +371,15 @@ function Frames:Misc()
 	-- /run ExtraActionBarFrame:Show() ExtraActionButton1:Show() ExtraActionButton1.style:SetTexture("Interface\\ExtraButton\\Default") ExtraActionBarFrame.outro:Stop() ExtraActionBarFrame.intro:Play()
 
 	-- Power Bar Alt
-	PlayerPowerBarAlt:ClearAllPoints()
-	PlayerPowerBarAlt:SetPoint("CENTER",UIParent,"CENTER",db.powerbaraltx,db.powerbaralty)
-	PlayerPowerBarAlt.ignoreFramePositionManager=true
+	if not PlayerPowerBarAlt.SetPointNew then
+		PlayerPowerBarAlt.ClearAllPointsNew=PlayerPowerBarAlt.ClearAllPoints
+		PlayerPowerBarAlt.ClearAllPoints=nop
+		PlayerPowerBarAlt.SetPointNew=PlayerPowerBarAlt.SetPoint
+		PlayerPowerBarAlt.SetPoint=nop
+	end
+	PlayerPowerBarAlt:ClearAllPointsNew()
+	PlayerPowerBarAlt:SetPointNew("CENTER",UIParent,"CENTER",db.powerbaraltx,db.powerbaralty)
+	-- PlayerPowerBarAlt.ignoreFramePositionManager=true
 	-- /run PlayerPowerBarAlt:Show() PlayerPowerBarAlt:SetSize(256,64) PlayerPowerBarAlt.frame:SetTexture("Interface/UnitPowerBarAlt/Fire_Horizontal_Frame")
 
 	-- FramePositionManager
@@ -378,6 +387,8 @@ function Frames:Misc()
 	UIPARENT_MANAGED_FRAME_POSITIONS.CONTAINER_OFFSET_X.baseX=db.containerx
 	UIPARENT_MANAGED_FRAME_POSITIONS.CONTAINER_OFFSET_Y.yOffset=db.containery
 	UIPARENT_MANAGED_FRAME_POSITIONS.OBJTRACKER_OFFSET_X.baseX=db.objtrackerx
+	VISIBLE_CONTAINER_SPACING=-25
+	CONTAINER_SPACING=-4
 
 	-- Minimap Tweaks
 	if db.minimaptweaks then
@@ -407,7 +418,20 @@ function Frames:Misc()
 	}) do
 		v:SetVertexColor(db.framescolor,db.framescolor,db.framescolor)
 	end
+	
+	-- Talking Head
 end
+
+Frames.talkinghead=CreateFrame("Frame") -- ne marche pas dans la fonction à cause du LoadAddOn ArenaUI qui devrait être delayé
+Frames.talkinghead:RegisterEvent("ADDON_LOADED")
+Frames.talkinghead:SetScript("OnEvent",
+function(s,e,addon)
+	if addon=="Blizzard_TalkingHeadUI" then
+		TalkingHeadFrame.ignoreFramePositionManager=true
+		TalkingHeadFrame:ClearAllPoints()
+		TalkingHeadFrame:SetPoint("BOTTOM",UIParent,"BOTTOM",db.talkingheadx,db.talkingheady)
+	end
+end)
 
 hbf=function(f,n)
 	f.healthbar:SetMinMaxValues(0,100);
@@ -560,13 +584,6 @@ function Frames:GetOptions()
 						name="Y",
 						softMin=-100,softMax=100,step=1,bigStep=5,
 						order=42
-					},
-					classportrait={
-						type="toggle",
-						name="Class Portrait",
-						get=function() return db.showframeportrait end,
-						set=function(i,v) db.showframeportrait=v self:ApplySettings() end,
-						order=43
 					},
 				}
 			},
@@ -911,10 +928,9 @@ function Frames:GetOptions()
 						name="Minimap Tweaks",
 						order=7
 					},
-					framescolor={
-						type="range",
-						name="Frames Color",
-						min=0,max=1,step=0.01,bigStep=0.1,
+					classportrait={
+						type="toggle",
+						name="Class Portrait",
 						order=8
 					},
 					framerate={
@@ -985,16 +1001,39 @@ function Frames:GetOptions()
 						softMin=-500,softMax=500,step=1,bigStep=5,
 						order=42
 					},
+					talkinghead={
+						type="header",
+						name="Talking Head",
+						order=50
+					},
+					talkingheadx={
+						type="range",
+						name="X",
+						softMin=-500,softMax=500,step=1,bigStep=5,
+						order=51
+					},
+					talkingheady={
+						type="range",
+						name="Y",
+						softMin=-500,softMax=500,step=1,bigStep=5,
+						order=52
+					},
 					other={
 						type="header",
 						name="",
-						order=50
+						order=100
+					},
+					framescolor={
+						type="range",
+						name="Frames Color",
+						min=0,max=1,step=0.01,bigStep=0.1,
+						order=101
 					},
 					objtrackerx={
 						type="range",
 						name="Objectives X",
 						softMin=-500,softMax=500,step=1,bigStep=5,
-						order=51
+						order=102
 					},
 				}
 			},
