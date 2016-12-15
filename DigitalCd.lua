@@ -5,7 +5,6 @@
 -- by Pierre-Yves "Grogir" DUTREUILH
 --
 --------------------------------------------------
--- pandemic non exact sur la r�application du dot...
 
 local AddonName,SKG=...
 local DigitalCd=SKG:NewModule("DigitalCd","AceEvent-3.0")
@@ -56,7 +55,7 @@ function dcd:SetCd(cd,start,duration,enable,charges,maxcharges)
         txt.start=start
         txt.duration=duration
         txt.nextupdate=0
-		if cd.pandemic then cd.pandemic=0.3*duration end
+		if cd.pandemic==true then cd.pandemic=0.3*duration end
 		txt:Show()
     elseif cd.txt then
 		cd.txt.text:SetText("")

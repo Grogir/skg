@@ -5,7 +5,6 @@
 -- by Pierre-Yves "Grogir" DUTREUILH
 --
 --------------------------------------------------
--- anticipation rogue
 
 local AddonName,SKG=...
 local ComboPoints=SKG:NewModule("ComboPoints","AceEvent-3.0")
@@ -37,7 +36,7 @@ function ComboPoints:OnInitialize()
 	self:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED","Reload")
 end
 function ComboPoints:Reload(e,u)
-	if e~="PLAYER_SPECIALIZATION_CHANGED" or u=="player" then
+	if db.enabled and (e~="PLAYER_SPECIALIZATION_CHANGED" or u=="player") then
 		self:OnDisable()
 		self:OnEnable()
 	end
@@ -52,9 +51,8 @@ ComboPoints.specdata={
 	[66]=SPELL_POWER_HOLY_POWER, -- prot paladin
 	[70]=SPELL_POWER_HOLY_POWER, -- ret paladin
 	[103]=COMBOS_TYPE, -- feral druid
-	[258]=SPELL_POWER_SHADOW_ORBS, -- shadow priest
 	[259]=COMBOS_TYPE, -- assass rogue
-	[260]=COMBOS_TYPE, -- combat rogue
+	[260]=COMBOS_TYPE, -- outlaw rogue
 	[261]=COMBOS_TYPE, -- sub rogue
 }
 ComboPoints.points={}
@@ -106,8 +104,10 @@ function ComboPoints:Update()
 	end
 end
 function ComboPoints:ApplySettings()
-	self:OnDisable()
-	self:OnEnable()
+	if db.enabled then
+		self:OnDisable()
+		self:OnEnable()
+	end
 end
 
 -- OPTIONS

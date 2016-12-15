@@ -5,7 +5,6 @@
 -- by Pierre-Yves "Grogir" DUTREUILH & Florian "Khujara" FALAVEL
 --
 --------------------------------------------------
--- finir nameplates texte flottant
 
 local AddonName,SKG=...
 local db
@@ -166,61 +165,48 @@ end)
 	-- end
 -- end
 
--- NAMEPLATES
+-- FLOATING COMBAT TEXT
 
--- plates=CreateFrame("Frame")
--- plates:RegisterEvent("PLAYER_ENTERING_WORLD")
--- plates:SetScript("OnEvent",function(self)
-	-- if not self.init then
-		-- self.init=true
-		-- WorldFrame:SetScale(0.8)
-		-- hooksecurefunc("CombatText_UpdateDisplayedMessages",function()
-			-- COMBAT_TEXT_SPACING=COMBAT_TEXT_SPACING*0.8
-			-- COMBAT_TEXT_MAX_OFFSET=COMBAT_TEXT_MAX_OFFSET*0.8
-			-- COMBAT_TEXT_LOCATIONS.startY=COMBAT_TEXT_LOCATIONS.startY*0.8
-			-- COMBAT_TEXT_LOCATIONS.endY=(COMBAT_TEXT_LOCATIONS.endY*0.8+COMBAT_TEXT_LOCATIONS.startY)*0.5
-			-- CombatText_ClearAnimationList()
-		-- end)
-		-- COMBAT_TEXT_SCROLLSPEED=1
-		-- COMBAT_TEXT_FADEOUT_TIME=0
-	-- end
--- end)
--- plates.num=-1
--- plates.elapsed=0
--- plates:SetScript("OnUpdate",function(self,elapsed)
-	-- self.elapsed=self.elapsed+elapsed
-	-- if WorldFrame:GetNumChildren()~=self.num or self.elapsed>0.1 then
-		-- self.num=WorldFrame:GetNumChildren()
-		-- self.elapsed=0
-		-- local t={WorldFrame:GetChildren()}
-		-- for i,f in pairs(t) do
-			-- if f:GetBackdrop() and f:GetBackdrop().bgFile=="Interface\\Tooltips\\ChatBubble-Background" then
-				-- f:SetScale(1.25)
-			-- end
-		-- end
-	-- end
--- end)
+floating=CreateFrame("Frame")
+floating:RegisterEvent("PLAYER_ENTERING_WORLD")
+floating:SetScript("OnEvent",function(self)
+	if not self.init then
+		self.init=true
+		hooksecurefunc("CombatText_UpdateDisplayedMessages",function()
+			COMBAT_TEXT_SPACING=5
+			COMBAT_TEXT_LOCATIONS.startY=380
+			COMBAT_TEXT_LOCATIONS.endY=480
+			CombatText_ClearAnimationList()
+		end)
+		COMBAT_TEXT_HEIGHT=20
+		COMBAT_TEXT_CRIT_MAXHEIGHT=30
+		COMBAT_TEXT_CRIT_MINHEIGHT=24
+		COMBAT_TEXT_SCROLLSPEED=1
+		COMBAT_TEXT_FADEOUT_TIME=0
+		CombatText_UpdateDisplayedMessages()
+	end
+end)
 
 -- TC
 
 snapshot=CreateFrame("Frame")
 snapshot:Show()
 snapshot.removed={[5215]=0,[145152]=0,[58984]=0}
-snapshot.cache={[1079]={},[155722]={},[106830]={}}
+snapshot.cache={[1079]={},[155722]={},[106830]={},[155625]={}}
 function snapshot:Calc()
 	local cp=UnitPower("player",4)
 	if cp==0 then cp=5 end
-	local mult=1
-	if UnitBuff("player","Fureur du tigre") then mult=mult*1.15 end
-	if UnitBuff("player","Rugissement sauvage") then mult=mult*1.25 end
-	if UnitBuff("player","Griffes de sang") or GetTime()-snapshot.removed[145152]<0.05 then mult=mult*1.4 end
-	local rakemult=1
-	if UnitBuff("player","Incarnation : Roi de la jungle") or UnitBuff("player","Rôder") or GetTime()-snapshot.removed[5215]<0.05 or UnitBuff("player","Camouflage dans l'ombre") or GetTime()-snapshot.removed[58984]<0.05 then rakemult=2 end
+	local tf,sr,bt,stealth=1,1,1,1
+	if UnitBuff("player","Fureur du tigre") then tf=1.15 end
+	if UnitBuff("player","Rugissement sauvage") then sr=1.25 end
+	if UnitBuff("player","Griffes de sang") or GetTime()-snapshot.removed[145152]<0.05 then bt=1.4 end
+	if UnitBuff("player","Incarnation : Roi de la jungle") or UnitBuff("player","Rôder") or GetTime()-snapshot.removed[5215]<0.05 or UnitBuff("player","Camouflage dans l'ombre") or GetTime()-snapshot.removed[58984]<0.05 then stealth=2 end
 
-	snapshot.cache[1079].value=cp/5*mult
-	snapshot.cache[1079].valueget=mult
-	snapshot.cache[155722].value=mult*rakemult
-	snapshot.cache[106830].value=mult
+	snapshot.cache[1079].value=tf*sr*bt*cp/5
+	snapshot.cache[1079].valueget=tf*sr*bt
+	snapshot.cache[155722].value=tf*sr*bt*stealth
+	snapshot.cache[106830].value=tf*sr*bt
+	snapshot.cache[155625].value=tf*sr
 end
 snapshot:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 snapshot:SetScript("OnUpdate",function() snapshot:Calc() end)
@@ -233,9 +219,9 @@ snapshot:SetScript("OnEvent",function(_,_,_,param,_,src,_,_,_,dest,_,_,_,spell,_
 		if cache then
 			if param=="SPELL_AURA_APPLIED" or param=="SPELL_AURA_REFRESH" then
 				snapshot:Calc()
-				cache[dest]=cache.value -- print(param,spell,cache.value)
+				cache[dest]=cache.value
 			elseif param=="SPELL_AURA_REMOVED" then
-				cache[dest]=nil -- print(param,spell)
+				cache[dest]=nil
 			end
 		end
 	end
@@ -247,7 +233,7 @@ local ilvlcheck=CreateFrame("Frame")
 -- ilvlcheck:RegisterEvent("PLAYER_ENTER_COMBAT")
 ilvlcheck:RegisterEvent("PLAYER_REGEN_DISABLED")
 ilvlcheck:SetScript("OnEvent",function()
-	if UnitLevel("player")>=100 then
+	if tonumber(PlayerLevelText:GetText())>=100 then
 	   local limit=GetAverageItemLevel()*0.8
 	   for i=1,17 do
 		  if i~=4 then
@@ -257,7 +243,7 @@ ilvlcheck:SetScript("OnEvent",function()
 				   l=GetInventoryItemLink("player",16)
 				   if l then
 					   local sub,_,t=select(7,GetItemInfo(l))
-					   if t=="INVTYPE_2HWEAPON" or t=="INVTYPE_RANGED" or t=="INVTYPE_RANGEDRIGHT" and sub~=select(16,GetAuctionItemSubClasses(1)) then
+					   if t=="INVTYPE_2HWEAPON" or t=="INVTYPE_RANGED" or t=="INVTYPE_RANGEDRIGHT" and sub~="Wands" then
 						  break
 					   end
 				   end

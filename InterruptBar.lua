@@ -16,11 +16,13 @@ local Defaults={global={
 	x=-124,
 	y=-50,
 	size=30,
+	endframe=true,
+	endsound=true,
 	endsize=100,
 	marginx=1,
 	marginy=1,
 	spectoadd=65,
-	maxline=10,
+	maxcolumns=10,
 	list={
 
 	-- Death Knight --------------------------------------------------------------
@@ -438,7 +440,7 @@ function InterruptBar:EnterNonArenaWorld()
 	self.framelist[LineIndex] = {}
 	for ClassIndex, ClassList in ipairs(Database.list) do
 		for SpellIndex, Spell in ipairs(ClassList[2]) do
-			local NewLine = FrameIndex % Database.maxline
+			local NewLine = FrameIndex % (Database.maxcolumns+1)
 			if(NewLine == 0) then
 				LineIndex = LineIndex + 1
 				FrameIndex = 1
@@ -550,8 +552,8 @@ end
 
 local function InterruptBar_OnUpdate(self)
 	if GetTime()>=self.start+self.duration then
-		PlaySound("AuctionWindowOpen");
-		InterruptBar:ShowEndCooldownFrame(self.SpellID)
+		if Database.endsound then PlaySound("AuctionWindowOpen") end
+		if Database.endframe then InterruptBar:ShowEndCooldownFrame(self.SpellID) end
 		if(Database.fl==1) then
 			InterruptBar:Deactivatebtn(self)
 		else
@@ -623,18 +625,18 @@ function InterruptBar:GetOptions()
 				desc="Enable the module",
 				get=getter,
 				set=setter,
-				order=1,
+				order=1
 			},
 			ib={
 				type="header",
 				name="Interrupt Bar",
-				order=10,
+				order=10
 			},
 			x={
 				type="range",
 				name="X",
 				min=-500,max=500,step=1,bigStep=5,
-				order=11,
+				order=11
 			},
 			y={
 				type="range",
@@ -648,42 +650,52 @@ function InterruptBar:GetOptions()
 				min=5,max=100,step=1,bigStep=5,
 				order=13
 			},
+			endframe={
+				type="toggle",
+				name="Alert Icon",
+				order=20
+			},
+			endsound={
+				type="toggle",
+				name="Alert Sound",
+				order=21
+			},
 			endsize={
 				type="range",
 				name="Alert Icon Size",
 				min=5,max=200,step=1,bigStep=5,
-				order=13
+				order=22
 			},
-			maxline={
+			maxcolumns={
 				type="range",
-				name="Max Lines",
+				name="Max Columns",
 				min=1,max=50,step=1,bigStep=1,
-				order=14
+				order=30
 			},
 			fl={
 				type="select",
 				name="Display",
 				values={[0]="Always","Standard","Persistent"},
 				-- min=0,max=2,step=1,bigStep=1,
-				order=15
+				order=31
 			},
 			test={
 				type="execute",
 				name="Test",
 				func=GlobalTest,
-				order=19
+				order=32
 			},
 			reset={
 				type="execute",
 				name="Reset",
 				func=GlobalEnterWorld,
-				order=22
+				order=40
 			},
 			resettest={
 				type="execute",
 				name="Show Arena Test",
 				func=GlobalTestEnterArena,
-				order=23
+				order=41
 			},
 		}
 	}

@@ -15,9 +15,11 @@ local defaults={global={
 	trinketx=10,
 	trinkety=5,
 	trinketsize=30,
+	trinketshown=true,
 	dispelx=40,
 	dispely=5,
 	dispelsize=30,
+	dispelshown=false,
 }}
 
 function SimpleTracker:OnInitialize()
@@ -28,111 +30,115 @@ function SimpleTracker:OnInitialize()
 	SKG:RegisterModuleOptions("SimpleTracker",self.options,"L SimpleTracker")
 end
 
--- TRINKET TRACKER
+-- SIMPLE TRACKER
 
 function SimpleTracker:OnEnable()
-	self:Trinket()
-	self:Dispel()
-end
-function SimpleTracker:OnDisable()
-end
-function SimpleTracker:ApplySettings()
 	for i=1,5 do
 		local arena=_G["ArenaEnemyFrame"..i]
-		arena.trinket:ClearAllPoints()
-		arena.trinket:SetPoint("TOPLEFT",arena,"TOPRIGHT",db.trinketx,db.trinkety)
-		arena.trinket:SetSize(db.trinketsize,db.trinketsize)
-		arena.dispel:ClearAllPoints()
-		arena.dispel:SetPoint("TOPLEFT",arena,"TOPRIGHT",db.dispelx,db.dispely)
-		arena.dispel:SetSize(db.dispelsize,db.dispelsize)
+		arena.trinket=self:TrinketFrame(i,arena)
+		arena.dispel=self:DispelFrame(i,arena)
+	end
+end
+function SimpleTracker:OnDisable()
+	for i=1,5 do
+		local arena=_G["ArenaEnemyFrame"..i]
+		if arena.trinket then
+			arena.trinket:UnregisterAllEvents()
+			arena.trinket:Hide()
+			arena.trinket=nil
+		end
+		if arena.dispel then
+			arena.dispel:UnregisterAllEvents()
+			arena.dispel:Hide()
+			arena.dispel=nil
+		end
+	end
+end
+function SimpleTracker:ApplySettings()
+	if db.enabled then
+		for i=1,5 do
+			local arena=_G["ArenaEnemyFrame"..i]
+			arena.trinket:ClearAllPoints()
+			arena.trinket:SetPoint("TOPLEFT",arena,"TOPRIGHT",db.trinketx,db.trinkety)
+			arena.trinket:SetSize(db.trinketsize,db.trinketsize)
+			arena.dispel:ClearAllPoints()
+			arena.dispel:SetPoint("TOPLEFT",arena,"TOPRIGHT",db.dispelx,db.dispely)
+			arena.dispel:SetSize(db.dispelsize,db.dispelsize)
+		end
 	end
 end
 
 -- TRINKET
 
-function SimpleTracker:Trinket()
-
-	local Trinket_TTX="Interface\\Icons\\inv_jewelry_trinketpvp_01"
-	local Trinket_Shown=true
-	local function Trinket_CreateFrame(i,p)
-		local f=CreateFrame("Frame",nil,_G["ArenaEnemyFrame"..i])
-		f:SetPoint("TOPLEFT",p,"TOPRIGHT",db.trinketx,db.trinkety)
-		f:SetSize(db.trinketsize,db.trinketsize)
-		f.c=CreateFrame("Cooldown",nil,f)
-		f.c:SetAllPoints(f)
-		f.t=f:CreateTexture(nil,"BORDER")
-		f.t:SetAllPoints()
-		f.t:SetTexture(Trinket_TTX)
-		f:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED")
-		f:RegisterEvent("PLAYER_ENTERING_WORLD")
-		f.u="arena"..i
-		-- f.u="target" -- debug
-		f.l=0
-		return f
-	end
-	local function Trinket_Filter(f,e,u,n,r,l,si)
-		if(e=="PLAYER_ENTERING_WORLD")then
-			f:SetShown(Trinket_Shown)
-			f.c:SetCooldown(0,0)
-		elseif(f.u==u)then
-			if(si==59752 or si==42292)then
-				f:Show()
-				f.l=GetTime()+120
-				f.c:SetCooldown(GetTime(),120)
-			elseif si==7744 and GetTime()+30>f.l then
-				f:Show()
-				f.c:SetCooldown(GetTime(),30)
-			end
+function SimpleTracker:TrinketFrame(i,p)
+	local f=CreateFrame("Frame",nil,p)
+	f:SetPoint("TOPLEFT",p,"TOPRIGHT",db.trinketx,db.trinkety)
+	f:SetSize(db.trinketsize,db.trinketsize)
+	f:SetShown(db.trinketshown)
+	f.c=CreateFrame("Cooldown",nil,f,"CooldownFrameTemplate")
+	f.c:SetDrawEdge(false)
+	f.c:SetAllPoints(f)
+	f.t=f:CreateTexture(nil,"BORDER")
+	f.t:SetAllPoints()
+	f.t:SetTexture(GetSpellTexture(208683))
+	f:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED")
+	f:RegisterEvent("PLAYER_ENTERING_WORLD")
+	f:SetScript("OnEvent",self.TrinketFilter)
+	f.u="arena"..i
+	-- f.u="target" -- debug
+	f.exp=0
+	return f
+end
+function SimpleTracker:TrinketFilter(e,u,_,_,_,id)
+	local f=self
+	if e=="PLAYER_ENTERING_WORLD" then
+		f:SetShown(db.trinketshown)
+		f.c:SetCooldown(0,0)
+	elseif f.u==u then
+		if id==208683 then
+			f:Show()
+			f.exp=GetTime()+120
+			f.c:SetCooldown(GetTime(),120)
+		elseif (id==7744 or id==59752) and GetTime()+30>f.exp then
+			f:Show()
+			f.c:SetCooldown(GetTime(),30)
 		end
 	end
-	for i=1,5 do
-		local arena=_G["ArenaEnemyFrame"..i]
-		arena.trinket=Trinket_CreateFrame(i,arena)
-		arena.trinket:SetScript("OnEvent",Trinket_Filter)
-	end
-
 end
 
 -- DISPEL
 
-function SimpleTracker:Dispel()
-
-	local Dispel_TTX="Interface\\Icons\\spell_holy_dispelmagic"
-	local Dispel_Shown=true
-	local function Dispel_CreateFrame(i,p)
-		local f=CreateFrame("Frame",nil,p)
-		f:SetPoint("TOPLEFT",p,"TOPRIGHT",db.dispelx,db.dispely)
-		f:SetSize(db.dispelsize,db.dispelsize)
-		f.c=CreateFrame("Cooldown",nil,f)
-		f.c:SetAllPoints(f)
-		f.t=f:CreateTexture(nil,"BORDER")
-		f.t:SetAllPoints()
-		f.t:SetTexture(Dispel_TTX)
-		f:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED")
-		f:RegisterEvent("PLAYER_ENTERING_WORLD")
-		f.u="arena"..i
-		-- f.u="target" -- debug
-		return f
-	end
-	local function Dispel_Filter(f,e,u,n,r,l,si)
-		if(e=="PLAYER_ENTERING_WORLD")then
-			f:SetShown(Dispel_Shown)
-			f.c:SetCooldown(0,0)
-		elseif(f.u==u)then
-			if(si==527 or si==4987 or si==77130 or si==88423 or si==2782 or si==475 or si==115450)then
-				f:Show()
-				f.t:SetTexture(GetSpellTexture(si))
-				f.c:SetCooldown(GetTime(),8)
-			end
+function SimpleTracker:DispelFrame(i,p)
+	local f=CreateFrame("Frame",nil,p)
+	f:SetPoint("TOPLEFT",p,"TOPRIGHT",db.dispelx,db.dispely)
+	f:SetSize(db.dispelsize,db.dispelsize)
+	f:SetShown(db.dispelshown)
+	f.c=CreateFrame("Cooldown",nil,f,"CooldownFrameTemplate")
+	f.c:SetDrawEdge(false)
+	f.c:SetAllPoints(f)
+	f.t=f:CreateTexture(nil,"BORDER")
+	f.t:SetAllPoints()
+	f.t:SetTexture("Interface\\Icons\\spell_holy_dispelmagic")
+	f:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED")
+	f:RegisterEvent("PLAYER_ENTERING_WORLD")
+	f:SetScript("OnEvent",self.DispelFilter)
+	f.u="arena"..i
+	-- f.u="target" -- debug
+	return f
+end
+function SimpleTracker:DispelFilter(e,u,_,_,_,id)
+	local f=self
+	if e=="PLAYER_ENTERING_WORLD" then
+		f:SetShown(db.dispelshown)
+		f.c:SetCooldown(0,0)
+	elseif f.u==u then
+		-- 527 priest, 4987 paladin, 77130 shaman, 88423 rdruid, 2782 druid, 475 mage, 115450 monk
+		if id==527 or id==4987 or id==77130 or id==88423 or id==2782 or id==475 or id==115450 then
+			f:Show()
+			f.t:SetTexture(GetSpellTexture(id))
+			f.c:SetCooldown(GetTime(),8)
 		end
 	end
-	-- 527 priest, 4987 paladin, 77130 shaman, 88423 rdruid, 2782 druid, 475 mage, 115450 monk
-	for i=1,5 do
-		local arena=_G["ArenaEnemyFrame"..i]
-		arena.dispel=Dispel_CreateFrame(i,arena)
-		arena.dispel:SetScript("OnEvent",Dispel_Filter)
-	end
-
 end
 
 -- OPTIONS
@@ -158,6 +164,8 @@ function SimpleTracker:GetOptions()
 				type="toggle",
 				name="Enable",
 				desc="Enable the module",
+				get=function() return self:IsEnabled() end,
+				set=function(i,v) if v then self:Enable() else self:Disable() end db.enabled=v end,
 				order=1,
 			},
 			trinket={
@@ -183,6 +191,11 @@ function SimpleTracker:GetOptions()
 				min=5,max=100,step=1,bigStep=5,
 				order=13
 			},
+			trinketshown={
+				type="toggle",
+				name="Shown at start",
+				order=14,
+			},
 			dispel={
 				type="header",
 				name="Dispel Tracker",
@@ -205,6 +218,11 @@ function SimpleTracker:GetOptions()
 				name="Size",
 				min=5,max=100,step=1,bigStep=5,
 				order=23
+			},
+			dispelshown={
+				type="toggle",
+				name="Shown at start",
+				order=24,
 			},
 		}
 	}

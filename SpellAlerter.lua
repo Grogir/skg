@@ -12,6 +12,8 @@ local db
 
 local defaults={global={
 	enabled=true,
+	x=0,
+	y=100,
 	iconsize=100,
 	spelllist=
 	{
@@ -144,7 +146,7 @@ sa = self.sa
 local sat=sa:CreateTexture(nil,"BACKGROUND")
 sat:SetAllPoints(self.sa)
 sat:SetTexCoord(0.07,0.93,0.07,0.93)
-sa:SetPoint("CENTER",UIParent,"CENTER",0,100)
+sa:SetPoint("CENTER",UIParent,"CENTER",db.x,db.y)
 sa:SetWidth(db.iconsize)
 sa:SetHeight(db.iconsize)
 sa:SetScript("OnEvent",function(self,event,...) self[event](self,...) end)
@@ -155,15 +157,18 @@ saDur=1.5
 function sa:COMBAT_LOG_EVENT_UNFILTERED(_,eventtype,hideCaster,srcGUID,srcName,srcFlags,_,dstGUID,dstName,dstFlags,_,spellID,spellName,_,auraType)
 	if SpellCastEvents[eventtype] and band(srcFlags,COMBAT_LOG)==COMBAT_LOG  and saDB[spellID] then
 		if eventtype=="SPELL_AURA_APPLIED" and saDB[spellID]~="PS" and saDB[spellID]~="P" then return end
-		self:SetScript("OnUpdate",SAOnUpdate)
-		icon=select(3,GetSpellInfo(spellID))
-		sat:SetTexture(icon)
-		currenticon=1
-		saStart=GetTime()
-		sa:Show()
-		if(soundDB[saDB[spellID]]==1) then
-			PlaySound("AuctionWindowClose");
-		end
+		Alert(spellID)
+	end
+end
+function Alert(spellID)
+	sa:SetScript("OnUpdate",SAOnUpdate)
+	icon=select(3,GetSpellInfo(spellID))
+	sat:SetTexture(icon)
+	currenticon=1
+	saStart=GetTime()
+	sa:Show()
+	if(soundDB[saDB[spellID]]==1) then
+		PlaySound("AuctionWindowClose")
 	end
 end
 function SAOnUpdate()
@@ -184,6 +189,7 @@ end
 function SpellAlerter:ApplySettings()
 	self.sa:SetWidth(db.iconsize)
 	self.sa:SetHeight(db.iconsize)
+	self.sa:SetPoint("CENTER",UIParent,"CENTER",db.x,db.y)
 end
 
 -- OPTIONS
@@ -209,18 +215,36 @@ function SpellAlerter:GetOptions()
 				type="toggle",
 				name="Enable",
 				desc="Enable the module",
-				order=1,
-			},
-			iconsize={
-				type="range",
-				name="Icon Size",
-				min=0,max=500,step=1,bigStep=2,softMax=500,
-				order=11
+				order=1
 			},
 			sa={
 				type="header",
 				name="Spell Alerter",
-				order=10,
+				order=10
+			},
+			x={
+				type="range",
+				name="X",
+				softMin=-1000,softMax=1000,step=1,bigStep=5,
+				order=11
+			},
+			y={
+				type="range",
+				name="Y",
+				softMin=-600,softMax=600,step=1,bigStep=5,
+				order=12
+			},
+			iconsize={
+				type="range",
+				name="Icon Size",
+				min=0,max=500,step=1,bigStep=5,softMax=200,
+				order=13
+			},
+			test={
+				type="execute",
+				name="Test",
+				func=function() Alert(118) end,
+				order=14
 			},
 		}
 	}
