@@ -89,8 +89,7 @@ function SimpleTracker:TrinketFrame(i,p)
 	f.exp=0
 	return f
 end
-function SimpleTracker:TrinketFilter(e,u,_,_,_,id)
-	local f=self
+function SimpleTracker.TrinketFilter(f,e,u,_,_,_,id)
 	if e=="PLAYER_ENTERING_WORLD" then
 		f:SetShown(db.trinketshown)
 		f.c:SetCooldown(0,0)
@@ -126,8 +125,7 @@ function SimpleTracker:DispelFrame(i,p)
 	-- f.u="target" -- debug
 	return f
 end
-function SimpleTracker:DispelFilter(e,u,_,_,_,id)
-	local f=self
+function SimpleTracker.DispelFilter(f,e,u,_,_,_,id)
 	if e=="PLAYER_ENTERING_WORLD" then
 		f:SetShown(db.dispelshown)
 		f.c:SetCooldown(0,0)

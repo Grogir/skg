@@ -7,7 +7,7 @@
 --------------------------------------------------
 
 local AddonName,SKG=...
-local DigitalCd=SKG:NewModule("DigitalCd","AceEvent-3.0")
+ DigitalCd=SKG:NewModule("DigitalCd","AceEvent-3.0")
 local db
 
 local defaults={global={
@@ -24,34 +24,33 @@ end
 
 -- DIGITAL COOLDOWNS
 
-function DigitalCd:OnEnable()
+-- DigitalCd.frame=CreateFrame("FRAME")
+DigitalCd.actions={}
 
-dcd=CreateFrame("FRAME")
-actions={}
-function dcd.OnShow(self)
-	if self.txt then self.txt:Show() end
-	if self.cooldownCountAction then actions[self]=true end
+function DigitalCd.OnShow(cd)
+	if cd.txt then cd.txt:Show() end
+	if cd.cooldownCountAction then DigitalCd.actions[cd]=true end
 end
-function dcd.OnHide(self)
-	if self.txt then self.txt:Hide() end
-	if self.cooldownCountAction then actions[self]=nil end
+function DigitalCd.OnHide(cd)
+	if cd.txt then cd.txt:Hide() end
+	if cd.cooldownCountAction then DigitalCd.actions[cd]=nil end
 end
-function dcd:AddAction(action,cd)
+function DigitalCd:AddAction(action,cd)
 	if not cd.cooldownCountAction then
-		cd:HookScript("OnShow",dcd.OnShow)
-		cd:HookScript("OnHide",dcd.OnHide)
+		cd:HookScript("OnShow",DigitalCd.OnShow)
+		cd:HookScript("OnHide",DigitalCd.OnHide)
 	end
 	cd.cooldownCountAction=action
 end
-function dcd:UpdateActions()
-	for cd in pairs(actions) do
+function DigitalCd:UpdateActions()
+	for cd in pairs(DigitalCd.actions) do
 		local start,duration,enable=GetActionCooldown(cd.cooldownCountAction)
-		dcd:SetCd(cd,start,duration,enable)
+		DigitalCd:SetCd(cd,start,duration,enable)
 	end
 end
-function dcd:SetCd(cd,start,duration,enable,charges,maxcharges)
-    if start and start>0 and enable>0 and (duration>3 or cd.detailedCC) and not cd.noCooldownCount then
-        local txt=cd.txt or dcd:CreateText(cd,start,duration)
+function DigitalCd:SetCd(cd,start,duration,enable,charges,maxcharges)
+    if start and start>0 and enable>0 and (duration>3 or cd.detailedCC) and not cd.noCooldownCount and db.enabled then
+        local txt=cd.txt or DigitalCd:CreateText(cd)
         txt.start=start
         txt.duration=duration
         txt.nextupdate=0
@@ -63,37 +62,48 @@ function dcd:SetCd(cd,start,duration,enable,charges,maxcharges)
 		cd.txt:Hide()
     end
 end
-function dcd:CreateText(cd,start,duration)
+function DigitalCd:CreateText(cd)
     cd.txt=CreateFrame("Frame",nil,cd:GetParent())
     local txt=cd.txt
+	txt.cd=cd
     txt:SetAllPoints(cd)
     txt:SetFrameLevel(cd:GetFrameLevel()+5)
     txt.nextupdate=0
     txt.text=txt:CreateFontString(nil,"OVERLAY")
 	txt.text:SetFont("Fonts\\FRIZQT__.TTF",12,"OUTLINE")
 	txt.text:SetPoint("CENTER")
-	txt:SetScript("OnUpdate",function(self,elapsed)
-		if txt.nextupdate<0 then
-			if GetTime()<txt.start then return end
-			local text,nextupdate,size,color=dcd:GetText(txt.duration-(GetTime()-txt.start),cd.detailedCC,cd.pandemic)
-			local ratio=cd:GetWidth()/36 if ratio>1 then ratio=1 end
-			size=ratio*size if size==0 then size=1 end
-			if cd:GetWidth()<20 and cd:GetParent() and cd:GetParent():GetName() then
-				local count=_G[cd:GetParent():GetName().."Count"]
-				if count and count:IsShown() and count:GetText() then text="" end
-			end
-			txt.text:SetFont("Fonts\\FRIZQT__.TTF",size,"OUTLINE")
-			txt.text:SetTextColor(unpack(color))
-			txt.text:SetText(text)
-			txt.nextupdate=nextupdate
-		else
-			txt.nextupdate=txt.nextupdate-elapsed
-		end
-	end)
+	txt:SetScript("OnUpdate",DigitalCd.CdUpdate)
     txt:Hide()
     return txt
 end
-function dcd:GetText(secs,detail,pand)
+function DigitalCd.CdUpdate(txt,elapsed)
+	if txt.nextupdate<0 then
+		if GetTime()<txt.start then return end
+		local cd=txt.cd
+		local text,nextupdate,size,color=DigitalCd:GetText(txt.duration-(GetTime()-txt.start),cd.detailedCC,cd.pandemic)
+		local ratio=cd:GetWidth()/36 if ratio>1 then ratio=1 end
+		size=ratio*size if size==0 then size=1 end
+		-- if cd:GetWidth()<20 and cd:GetParent() and cd:GetParent():GetName() then
+			-- local count=_G[cd:GetParent():GetName().."Count"]
+			-- if count and count:IsShown() and count:GetText() then text="" end
+		-- end
+		local alpha=1
+		if cd:GetWidth()<22 then
+			alpha=0.7
+			if cd:GetWidth()<20 then
+				alpha=0
+			end
+		end
+		txt.text:SetFont("Fonts\\FRIZQT__.TTF",size,"OUTLINE")
+		local r,g,b=unpack(color)
+		txt.text:SetTextColor(r,g,b,alpha)
+		txt.text:SetText(text)
+		txt.nextupdate=nextupdate
+	else
+		txt.nextupdate=txt.nextupdate-elapsed
+	end
+end
+function DigitalCd:GetText(secs,detail,pand)
 	pand=pand or 0.5
 	--										text						nextupdate								size color
     if secs>=86400 then return				floor(secs/86400+0.5).."d",	mod(secs,43200),						15,{1,1,1}
@@ -106,22 +116,25 @@ function dcd:GetText(secs,detail,pand)
     end
     return "",1,15,{1,0,0}
 end
-function dcd:Start(start,duration)
-	dcd:SetCd(self,start,duration,1)
-	if not self.cooldownCountAction and not self.hook then
-		self:HookScript("OnShow",dcd.OnShow)
-		self:HookScript("OnHide",dcd.OnHide)
-		self.hook=true
+function DigitalCd.Start(cd,start,duration)
+	DigitalCd:SetCd(cd,start,duration,1)
+	if not cd.cooldownCountAction and not cd.hook then
+		cd:HookScript("OnShow",DigitalCd.OnShow)
+		cd:HookScript("OnHide",DigitalCd.OnHide)
+		cd.hook=true
 	end
 end
-dcd:SetScript("OnEvent",function() dcd:UpdateActions() end)
-dcd:RegisterEvent("ACTIONBAR_UPDATE_COOLDOWN")
-hooksecurefunc(getmetatable(ActionButton1Cooldown).__index,"SetCooldown",dcd.Start)
-hooksecurefunc("SetActionUIButton",dcd.AddAction)
-for i,button in pairs(ActionBarButtonEventsFrame.frames) do
-	dcd:AddAction(button.action,button.cooldown)
-end
 
+function DigitalCd:OnEnable()
+	if not DigitalCd.init then
+		DigitalCd:RegisterEvent("ACTIONBAR_UPDATE_COOLDOWN","UpdateActions")
+		hooksecurefunc(getmetatable(ActionButton1Cooldown).__index,"SetCooldown",DigitalCd.Start)
+		hooksecurefunc("SetActionUIButton",DigitalCd.AddAction)
+		for i,button in pairs(ActionBarButtonEventsFrame.frames) do
+			DigitalCd:AddAction(button.action,button.cooldown)
+		end
+		DigitalCd.init=true
+	end
 end
 function DigitalCd:OnDisable()
 end
@@ -151,6 +164,8 @@ function DigitalCd:GetOptions()
 				type="toggle",
 				name="Enable",
 				desc="Enable the module",
+				get=function() return self:IsEnabled() end,
+				set=function(i,v) if v then self:Enable() else self:Disable() end db.enabled=v end,
 				order=1,
 			},
 			dcd={

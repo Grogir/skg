@@ -170,7 +170,7 @@ end)
 floating=CreateFrame("Frame")
 floating:RegisterEvent("PLAYER_ENTERING_WORLD")
 floating:SetScript("OnEvent",function(self)
-	if not self.init then
+	if not self.init and CombatText_UpdateDisplayedMessages then
 		self.init=true
 		hooksecurefunc("CombatText_UpdateDisplayedMessages",function()
 			COMBAT_TEXT_SPACING=5

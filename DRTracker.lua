@@ -43,6 +43,10 @@ SpellDatabase={
 [115268]="fear", --Envoûtement
 [6358]="fear", --Séduction
 [5246]="fear", --Cri d’intimidation
+[217832]="fear", --Emprisonnement
+[221527]="fear", --Emprisonnement
+[213691]="fear", --Flèche de dispersion
+[207167]="fear", --Grésil aveuglant
 
 [99]="sheep", --Rugissement incapacitant
 [3355]="sheep", --Piège givrant
@@ -62,6 +66,7 @@ SpellDatabase={
 [20066]="sheep", --Repentir
 [9484]="sheep", --Entraves des morts-vivants
 [88625]="sheep", --Mot sacré : Châtier
+[200196]="sheep", --Mot sacré : Châtier
 [64044]="sheep", --Horreur psychique
 [605]="sheep", --Emprise
 [1776]="sheep", --Suriner
@@ -74,6 +79,7 @@ SpellDatabase={
 [30216]="sheep", --Bombe en gangrefer
 [30217]="sheep", --Grenade en adamantite
 [67769]="sheep", --Bombe à fragmentation en cobalt
+[209790]="sheep", --Flèche givrante
 
 [96294]="root", --Chaînes de glace
 [339]="root", --Sarments
@@ -95,6 +101,8 @@ SpellDatabase={
 [63685]="root", --Puissance gelée
 [87194]="root", --Glyphe d’attaque mentale
 [170996]="root", --Débiliter
+[157997]="root", --Nova de glace
+[228600]="root", --Pointe glaciaire
 
 [47476]="silence", --Strangulation
 [115502]="silence", --Strangulation
@@ -109,6 +117,7 @@ SpellDatabase={
 --[47481]="stun", --Ronger
 [91797]="stun", --Coup monstrueux
 [108194]="stun", --Asphyxier
+[221562]="stun", --Asphyxier
 [115001]="stun", --Hiver impitoyable
 [203123]="stun", --Estropier
 [163505]="stun", --Griffure
@@ -117,7 +126,8 @@ SpellDatabase={
 [24394]="stun", --Intimidation
 [44572]="stun", --Congélation
 [123687]="stun", --Onde de la charge du buffle
-[120086]="stun", --Poings de fureur
+[120086]="stun", --Poings de fureur?
+[232055]="stun", --Poings de fureur
 [119381]="stun", --Balayement de jambe
 [105593]="stun", --Poing de la justice
 [853]="stun", --Marteau de la justice
@@ -134,6 +144,13 @@ SpellDatabase={
 --[46968]="stun", --Onde de choc
 [132169]="stun", --Eclair de tempête
 --[107570]="stun", --Eclair de tempête
+[200166]="stun", --Métamorphose
+[211881]="stun", --Eruption gangrenée --à test
+[179057]="stun", --Nova du chaos
+[207171]="stun", --L’hiver approche
+[200200]="stun", --Mot sacré : Châtier
+[196958]="stun", --Frappe des ombres
+[205290]="stun", --Traînée de cendres
 
 --A TEST
 [105771]="rndroot", --Charge --ok
@@ -177,6 +194,9 @@ SpellDatabase={
 [114028]="buff", --Renvoi de sort de masse
 [114029]="buff", --Protéger
 [49039]="buff", --Changeliche
+[210655]="buff", --Protection d’Ashamane
+[212800]="buff", --Voile corrompu
+[199754]="buff", --Riposte
 
 [124488]="aura", --Focalisation zen
 [31821]="aura", --Aura de dévotion
@@ -191,7 +211,7 @@ SpellDatabase={
 [104773]="def", --Résolution interminable
 [74001]="def", --Promptitude au combat
 [110913]="def", --Sombre marché
-[148467]="def", --Dissuasion
+[186265]="def", --Aspect de la tortue
 [31224]="def", --Cape d'ombre
 [61336]="def", --Instincts de survie
 [115018]="def", --Terre profanée
@@ -202,7 +222,8 @@ SpellDatabase={
 [30823]="def", --Rage du chaman
 [48792]="def", --Robustesse glaciale
 [45438]="def", --Bloc de glace
-[642]="def" --Bouclier divin
+[642]="def", --Bouclier divin
+[198111]="def", --Bouclier temporel
 }
 drduration=18 drtimeout=28
 drdebuff="DEBUFF" -- BUFF pour debug
@@ -247,7 +268,8 @@ function drt:GetTrack(unit,cat)
 		track:SetPoint("CENTER",0,0)
 		track:SetSize(db.iconsize,db.iconsize)
 		-- track.cd=CreateFrame("Cooldown",nil,track)
-		track.cd=CreateFrame("Cooldown",nil)
+		track.cd=CreateFrame("Cooldown",nil,nil,"CooldownFrameTemplate")
+		track.cd:SetDrawEdge(false)
 		track.cd:SetAllPoints(track)
 		track.t=track:CreateTexture(nil,"BORDER")
 		track.t:SetAllPoints()

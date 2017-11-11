@@ -260,19 +260,21 @@ function InterruptBar:OnInitialize()
 end
 
 function InterruptBar:ApplySettings()
-	self:Move(Database.x, Database.y, Database.marginx, Database.marginy, Database.size)
-	self.endcooldown:SetSize(Database.endsize,Database.endsize)
+	if Database.enabled then
+		self:Move(Database.x, Database.y, Database.marginx, Database.marginy, Database.size)
+		self.endcooldown:SetSize(Database.endsize,Database.endsize)
+	end
 end
 
 function InterruptBar:InitEndCooldownFrame(Frame)
-		Frame:SetPoint("CENTER", 0, 0)
-		Frame:SetSize(Database.endsize, Database.endsize)
-		Frame.texture=Frame:CreateTexture(nil,"BORDER")
-		Frame.texture:SetAllPoints(Frame)
-		--local _,_,Texture=GetSpellInfo(114028)
-		--Frame.texture:SetTexture(Texture)
-		--Frame.texture:Show()
-		--Frame:Show()
+	Frame:SetPoint("CENTER", 0, 0)
+	Frame:SetSize(Database.endsize, Database.endsize)
+	Frame.texture=Frame:CreateTexture(nil,"BORDER")
+	Frame.texture:SetAllPoints(Frame)
+	--local _,_,Texture=GetSpellInfo(114028)
+	--Frame.texture:SetTexture(Texture)
+	--Frame.texture:Show()
+	--Frame:Show()
 end
 
 function InterruptBar:OnEnable()
@@ -293,7 +295,7 @@ function InterruptBar:OnDisable()
 		for LineIndex=1, getn(self.framelist) do
 			for FrameIndex=1, getn(self.framelist[LineIndex]) do
 				local Frame = self.framelist[LineIndex][FrameIndex]
-				DisableFrame(Frame)
+				self:DisableFrame(Frame)
 			end
 		end
 	end
@@ -329,7 +331,6 @@ end
 
 -- INTERRUPT BAR
 function remap(Min, Max, t, RemapMin, RemapMax)
-
 	local Result = 0;
 	local Range = Max - Min;
 	if(Range > 0) then
@@ -359,15 +360,15 @@ function InterruptBar:ShowEndCooldownFrame(SpellID)
 end
 
 function InterruptBar:DisableFrame(Frame)
-		Frame:SetScript("OnEvent", nil)
-		Frame:UnregisterAllEvents()
-		Frame.CD.start=Time
-		Frame.CD.duration=CD
-		Frame.CD:SetCooldown(0,0)
-		Frame.CD:Hide()
-		self:Deactivatebtn(Frame.CD)
-		Frame:Hide()
-		Frame.Texture:Hide()
+	Frame:SetScript("OnEvent", nil)
+	Frame:UnregisterAllEvents()
+	Frame.CD.start=Time
+	Frame.CD.duration=CD
+	Frame.CD:SetCooldown(0,0)
+	Frame.CD:Hide()
+	self:Deactivatebtn(Frame.CD)
+	Frame:Hide()
+	Frame.Texture:Hide()
 end
 
 function InterruptBar:GetPosXFromFrameIndex(FrameIndex, X, MarginX, Size)
@@ -394,16 +395,16 @@ function InterruptBar:Move(X, Y, MarginX, MarginY, Size)
 end
 
 function InterruptBar:QuitWorld()
-		if(self.framelist ~= nil) then
-			for LineIndex=1, getn(self.framelist) do
-				for FrameIndex=1, getn(self.framelist[LineIndex]) do
-					local Frame = self.framelist[LineIndex][FrameIndex]
-					self:DisableFrame(Frame)
-					table.insert(self.poolframes, Frame)
-				end
+	if(self.framelist ~= nil) then
+		for LineIndex=1, getn(self.framelist) do
+			for FrameIndex=1, getn(self.framelist[LineIndex]) do
+				local Frame = self.framelist[LineIndex][FrameIndex]
+				self:DisableFrame(Frame)
+				table.insert(self.poolframes, Frame)
 			end
 		end
-		self.framelist = {}
+	end
+	self.framelist = {}
 end
 
 function InterruptBar:ShowFrame(Frame)
@@ -473,7 +474,8 @@ function InterruptBar:CreateFrame(LineIndex, SpellId, CDInSecs, PosX, PosY)
 	Frame.Texture:SetAllPoints(true)
 	Frame.Texture:SetTexture(Texture)
 	if(Frame.CD == nil) then
-		Frame.CD=CreateFrame("Cooldown",nil,Frame)
+		Frame.CD=CreateFrame("Cooldown",nil,Frame,"CooldownFrameTemplate")
+		Frame.CD:SetDrawEdge(false)
 	end
 	Frame.CD:SetAllPoints(Frame)
 	Frame.CDInSecs = CDInSecs
@@ -517,14 +519,14 @@ function InterruptBar:IsSpecFoundForSpell(Spec, SpellSpecList)
 end
 
 function InterruptBar:RemoveOldFrames(LineIndex)
-		if(self.framelist[LineIndex] ~= nil) then
-			for FrameIndexToRemove = 1, getn(self.framelist[LineIndex]) do
-				self.framelist[LineIndex][FrameIndexToRemove]:UnregisterAllEvents()
-				self.framelist[LineIndex][FrameIndexToRemove]:Hide()
-				self.framelist[LineIndex][FrameIndexToRemove].Texture:Hide()
-				self.framelist[LineIndex][FrameIndexToRemove].CD:Hide()
-			end
+	if(self.framelist[LineIndex] ~= nil) then
+		for FrameIndexToRemove = 1, getn(self.framelist[LineIndex]) do
+			self.framelist[LineIndex][FrameIndexToRemove]:UnregisterAllEvents()
+			self.framelist[LineIndex][FrameIndexToRemove]:Hide()
+			self.framelist[LineIndex][FrameIndexToRemove].Texture:Hide()
+			self.framelist[LineIndex][FrameIndexToRemove].CD:Hide()
 		end
+	end
 end
 
 function InterruptBar:AddSpec(SpecID, UnitID, EnemyIndex)
@@ -552,7 +554,7 @@ end
 
 local function InterruptBar_OnUpdate(self)
 	if GetTime()>=self.start+self.duration then
-		if Database.endsound then PlaySound("AuctionWindowOpen") end
+		if Database.endsound then PlaySound(5274) end
 		if Database.endframe then InterruptBar:ShowEndCooldownFrame(self.SpellID) end
 		if(Database.fl==1) then
 			InterruptBar:Deactivatebtn(self)
@@ -580,6 +582,7 @@ end
 -- LOCAL FUNCTIONS
 
 local function GlobalTest()
+	if not Database.enabled then return end
 	for LineIndex=1, getn(InterruptBar.framelist) do
 		for FrameIndex=1, getn(InterruptBar.framelist[LineIndex]) do
 			local Frame = InterruptBar.framelist[LineIndex][FrameIndex]
@@ -589,11 +592,13 @@ local function GlobalTest()
 end
 
 local function GlobalEnterWorld()
+	if not Database.enabled then return end
 	InterruptBar:QuitWorld()
 	InterruptBar:EnterWorld()
 end
 
 local function GlobalTestEnterArena()
+	if not Database.enabled then return end
 	InterruptBar:QuitWorld()
 	InterruptBar:AddSpec(259, "arena1", 1)
 	InterruptBar:AddSpec(65, "arena2", 2)
@@ -623,8 +628,8 @@ function InterruptBar:GetOptions()
 				type="toggle",
 				name="Enable",
 				desc="Enable the module",
-				get=getter,
-				set=setter,
+				get=function() return self:IsEnabled() end,
+				set=function(i,v) if v then self:Enable() else self:Disable() end Database.enabled=v end,
 				order=1
 			},
 			ib={

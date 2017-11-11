@@ -155,7 +155,7 @@ function Frames:UnitFrames()
 	
 	-- Arena frames
 	local foctex="Interface\\TARGETINGFRAME\\UI-TargetingFrame-NoLevel"
-	for i=1,3 do
+	for i=1,5 do
 		local pt,rel,relpt,x,y
 
 		for j,framename in ipairs({"ArenaEnemyFrame"..i,"ArenaPrepFrame"..i}) do
@@ -208,7 +208,7 @@ function Frames:UnitFrames()
 				manabartext:SetPoint("CENTER",manabar)
 			end
 
-			if arenatest and j==1 then
+			if arenatest and j==1 and i<4 then
 				frame:Show()
 				hbf(frame,100)
 				spec:Show()

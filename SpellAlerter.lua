@@ -168,7 +168,7 @@ function Alert(spellID)
 	saStart=GetTime()
 	sa:Show()
 	if(soundDB[saDB[spellID]]==1) then
-		PlaySound("AuctionWindowClose")
+		PlaySound(5275)
 	end
 end
 function SAOnUpdate()
