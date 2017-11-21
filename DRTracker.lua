@@ -47,6 +47,7 @@ SpellDatabase={
 [221527]="fear", --Emprisonnement
 [213691]="fear", --Flèche de dispersion
 [207167]="fear", --Grésil aveuglant
+[206961]="fear", --Tremblez devant moi
 
 [99]="sheep", --Rugissement incapacitant
 [3355]="sheep", --Piège givrant
