@@ -12,6 +12,18 @@ local db
 
 local defaults={global={
 	enabled=true,
+	dayssize=15,
+	dayscolor={1,1,1},
+	hourssize=15,
+	hourscolor={1,1,1},
+	minutessize=15,
+	minutescolor={1,1,1},
+	secondssize=18,
+	secondscolor={1,1,0},
+	lastsecondssize=24,
+	lastsecondscolor={1,0,0},
+	pandemicsize=24,
+	pandemiccolor={0,0.7,0},
 }}
 
 function DigitalCd:OnInitialize()
@@ -105,14 +117,14 @@ function DigitalCd.CdUpdate(txt,elapsed)
 end
 function DigitalCd:GetText(secs,detail,pand)
 	pand=pand or 0.5
-	--										text						nextupdate								size color
-    if secs>=86400 then return				floor(secs/86400+0.5).."d",	mod(secs,43200),						15,{1,1,1}
-    elseif secs>=3600 then return			floor(secs/3600+0.5).."h",	mod(secs,1800),							15,{1,1,1}
-    elseif secs>=60 then return				floor(secs/60+0.5).."m",	mod(secs,30),							15,{1,1,1}
-    elseif secs>=9.5 then return 			floor(secs+0.5).."",		secs+0.5-floor(secs+0.5),				18,{1,1,0}
-    elseif detail and secs>=0 then return 	format(" %.1f ",secs),		secs-0.1*floor(10*secs),				18,{1,0,0}
-    elseif secs>pand then return			floor(secs+0.5).."",		min(secs+.5-floor(secs+.5),secs-pand),	24,{1,0,0}
-    elseif secs>=0.5 then return 			floor(secs+0.5).."",		secs+0.5-floor(secs+0.5),				24,{0,1,0}
+	--										text						nextupdate								size,color
+    if secs>=86400 then return				floor(secs/86400+0.5).."d",	mod(secs,43200),						db.dayssize,db.dayscolor
+    elseif secs>=3600 then return			floor(secs/3600+0.5).."h",	mod(secs,1800),							db.hourssize,db.hourscolor
+    elseif secs>=60 then return				floor(secs/60+0.5).."m",	mod(secs,30),							db.minutessize,db.minutescolor
+    elseif secs>=9.5 then return 			floor(secs+0.5).."",		secs+0.5-floor(secs+0.5),				db.secondssize,db.secondscolor
+    elseif detail and secs>=0 then return 	format(" %.1f ",secs),		secs-0.1*floor(10*secs),				db.secondssize,db.lastsecondscolor
+    elseif secs>pand then return			floor(secs+0.5).."",		min(secs+.5-floor(secs+.5),secs-pand),	db.lastsecondssize,db.lastsecondscolor
+    elseif secs>=0.5 then return 			floor(secs+0.5).."",		secs+0.5-floor(secs+0.5),				db.pandemicsize,db.pandemiccolor
     end
     return "",1,15,{1,0,0}
 end
@@ -124,10 +136,18 @@ function DigitalCd.Start(cd,start,duration)
 		cd.hook=true
 	end
 end
+function DigitalCd:AddonLoaded(_,addon)
+	if addon=="Blizzard_PVPUI" then
+		if PVPQueueFrame and PVPQueueFrame.HonorInset and PVPQueueFrame.HonorInset.HonorLevelDisplay then
+			PVPQueueFrame.HonorInset.HonorLevelDisplay.noCooldownCount=true
+		end
+	end
+end
 
 function DigitalCd:OnEnable()
 	if not DigitalCd.init then
 		DigitalCd:RegisterEvent("ACTIONBAR_UPDATE_COOLDOWN","UpdateActions")
+		DigitalCd:RegisterEvent("ADDON_LOADED","AddonLoaded")
 		hooksecurefunc(getmetatable(ActionButton1Cooldown).__index,"SetCooldown",DigitalCd.Start)
 		hooksecurefunc("SetActionUIButton",DigitalCd.AddAction)
 		for i,button in pairs(ActionBarButtonEventsFrame.frames) do
@@ -144,10 +164,13 @@ end
 -- OPTIONS
 
 local function getter(info)
-	return db[info.arg or info[#info]]
+	local value=db[info.arg or info[#info]]
+	if type(value)=="table" then return unpack(value) end
+	return value
 end
-local function setter(info,value)
-	db[info.arg or info[#info]]=value
+local function setter(info,value,g,b)
+	print("set",value,g,b)
+	db[info.arg or info[#info]]=(g and b) and {value,g,b} or value
 	DigitalCd:ApplySettings()
 end
 function DigitalCd:GetOptions()
@@ -166,12 +189,103 @@ function DigitalCd:GetOptions()
 				desc="Enable the module",
 				get=function() return self:IsEnabled() end,
 				set=function(i,v) if v then self:Enable() else self:Disable() end db.enabled=v end,
-				order=1,
+				order=1
 			},
-			dcd={
+			days={
 				type="header",
-				name="Digital Cooldown",
-				order=10,
+				name="Above 1 day",
+				order=10
+			},
+			dayscolor={
+				type="color",
+				name="Text Color",
+				order=11
+			},
+			dayssize={
+				type="range",
+				name="Text Size",
+				min=1,max=40,step=1,bigStep=1,
+				order=12
+			},
+			hours={
+				type="header",
+				name="1 to 24 hours",
+				order=20
+			},
+			hourscolor={
+				type="color",
+				name="Text Color",
+				order=21
+			},
+			hourssize={
+				type="range",
+				name="Text Size",
+				min=1,max=40,step=1,bigStep=1,
+				order=22
+			},
+			minutes={
+				type="header",
+				name="1 to 60 minutes",
+				order=30
+			},
+			minutescolor={
+				type="color",
+				name="Text Color",
+				order=31
+			},
+			minutessize={
+				type="range",
+				name="Text Size",
+				min=1,max=40,step=1,bigStep=1,
+				order=32
+			},
+			seconds={
+				type="header",
+				name="10 to 60 seconds",
+				order=40
+			},
+			secondscolor={
+				type="color",
+				name="Text Color",
+				order=41
+			},
+			secondssize={
+				type="range",
+				name="Text Size",
+				min=1,max=40,step=1,bigStep=1,
+				order=42
+			},
+			lastseconds={
+				type="header",
+				name="Below 10 seconds",
+				order=50
+			},
+			lastsecondscolor={
+				type="color",
+				name="Text Color",
+				order=51
+			},
+			lastsecondssize={
+				type="range",
+				name="Text Size",
+				min=1,max=40,step=1,bigStep=1,
+				order=52
+			},
+			pandemic={
+				type="header",
+				name="Pandemic (debuff can be refreshed without loss)",
+				order=60
+			},
+			pandemiccolor={
+				type="color",
+				name="Text Color",
+				order=61
+			},
+			pandemicsize={
+				type="range",
+				name="Text Size",
+				min=1,max=40,step=1,bigStep=1,
+				order=62
 			},
 		}
 	}

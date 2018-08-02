@@ -13,11 +13,11 @@ local db
 local defaults={global={
 	enabled=true,
 	trinketx=10,
-	trinkety=5,
+	trinkety=2,
 	trinketsize=30,
 	trinketshown=true,
 	dispelx=40,
-	dispely=5,
+	dispely=2,
 	dispelsize=30,
 	dispelshown=false,
 }}
@@ -59,11 +59,13 @@ function SimpleTracker:ApplySettings()
 		for i=1,5 do
 			local arena=_G["ArenaEnemyFrame"..i]
 			arena.trinket:ClearAllPoints()
-			arena.trinket:SetPoint("TOPLEFT",arena,"TOPRIGHT",db.trinketx,db.trinkety)
+			arena.trinket:SetPoint("LEFT",arena,"RIGHT",db.trinketx,db.trinkety)
 			arena.trinket:SetSize(db.trinketsize,db.trinketsize)
+			arena.trinket:SetShown(db.trinketshown)
 			arena.dispel:ClearAllPoints()
-			arena.dispel:SetPoint("TOPLEFT",arena,"TOPRIGHT",db.dispelx,db.dispely)
+			arena.dispel:SetPoint("LEFT",arena,"RIGHT",db.dispelx,db.dispely)
 			arena.dispel:SetSize(db.dispelsize,db.dispelsize)
+			arena.dispel:SetShown(db.dispelshown)
 		end
 	end
 end
@@ -72,7 +74,7 @@ end
 
 function SimpleTracker:TrinketFrame(i,p)
 	local f=CreateFrame("Frame",nil,p)
-	f:SetPoint("TOPLEFT",p,"TOPRIGHT",db.trinketx,db.trinkety)
+	f:SetPoint("LEFT",p,"RIGHT",db.trinketx,db.trinkety)
 	f:SetSize(db.trinketsize,db.trinketsize)
 	f:SetShown(db.trinketshown)
 	f.c=CreateFrame("Cooldown",nil,f,"CooldownFrameTemplate")
@@ -109,7 +111,7 @@ end
 
 function SimpleTracker:DispelFrame(i,p)
 	local f=CreateFrame("Frame",nil,p)
-	f:SetPoint("TOPLEFT",p,"TOPRIGHT",db.dispelx,db.dispely)
+	f:SetPoint("LEFT",p,"RIGHT",db.dispelx,db.dispely)
 	f:SetSize(db.dispelsize,db.dispelsize)
 	f:SetShown(db.dispelshown)
 	f.c=CreateFrame("Cooldown",nil,f,"CooldownFrameTemplate")
@@ -174,19 +176,19 @@ function SimpleTracker:GetOptions()
 			trinketx={
 				type="range",
 				name="X",
-				min=-500,max=500,step=1,bigStep=5,
+				softMin=-200,softMax=200,step=1,bigStep=5,
 				order=11
 			},
 			trinkety={
 				type="range",
 				name="Y",
-				min=-500,max=500,step=1,bigStep=5,
+				softMin=-200,softMax=200,step=1,bigStep=5,
 				order=12
 			},
 			trinketsize={
 				type="range",
 				name="Size",
-				min=5,max=100,step=1,bigStep=5,
+				softMin=5,softMax=100,step=1,bigStep=5,
 				order=13
 			},
 			trinketshown={
@@ -202,19 +204,19 @@ function SimpleTracker:GetOptions()
 			dispelx={
 				type="range",
 				name="X",
-				min=-500,max=500,step=1,bigStep=5,
+				softMin=-200,softMax=200,step=1,bigStep=5,
 				order=21
 			},
 			dispely={
 				type="range",
 				name="Y",
-				min=-500,max=500,step=1,bigStep=5,
+				softMin=-200,softMax=200,step=1,bigStep=5,
 				order=22
 			},
 			dispelsize={
 				type="range",
 				name="Size",
-				min=5,max=100,step=1,bigStep=5,
+				softMin=5,softMax=100,step=1,bigStep=5,
 				order=23
 			},
 			dispelshown={

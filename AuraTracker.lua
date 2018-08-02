@@ -5,10 +5,8 @@
 -- by Pierre-Yves "Grogir" DUTREUILH
 --
 --------------------------------------------------
---icone
---nom si nom frame
---custom loadstring
---cond autre chose que aura?
+--listes
+--icones
 
 local AddonName,SKG=...
 local AuraTracker=SKG:NewModule("AuraTracker","AceEvent-3.0")
@@ -49,6 +47,45 @@ function AuraTracker:SpecChange(e,u)
 		self:OnEnable()
 	end
 end
+
+-- TC
+
+snapshot=CreateFrame("Frame")
+snapshot.removed={[5215]=0,[145152]=0,[58984]=0}
+snapshot.cache={[1079]={},[155722]={},[106830]={},[155625]={}}
+function snapshot:Calc()
+	local cp=UnitPower("player",4)
+	if cp==0 then cp=5 end
+	local tf,sr,bt,stealth=1,1,1,1
+	if UnitBuff("player","Fureur du tigre") then tf=1.15 end
+	if UnitBuff("player","Rugissement sauvage") then sr=1.25 end
+	if UnitBuff("player","Griffes de sang") or GetTime()-snapshot.removed[145152]<0.05 then bt=1.4 end
+	if UnitBuff("player","Incarnation : Roi de la jungle") or UnitBuff("player","Rôder") or GetTime()-snapshot.removed[5215]<0.05 or UnitBuff("player","Camouflage dans l'ombre") or GetTime()-snapshot.removed[58984]<0.05 then stealth=2 end
+
+	snapshot.cache[1079].value=tf*sr*bt*cp/5
+	snapshot.cache[1079].valueget=tf*sr*bt
+	snapshot.cache[155722].value=tf*sr*bt*stealth
+	snapshot.cache[106830].value=tf*sr*bt
+	snapshot.cache[155625].value=tf*sr
+end
+-- snapshot:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+-- snapshot:SetScript("OnUpdate",function() snapshot:Calc() end)
+snapshot:SetScript("OnEvent",function(_,_,_,param,_,src,_,_,_,dest,_,_,_,spell,_,_,_)
+	if src==UnitGUID("player") then
+		if snapshot.removed[spell] and param=="SPELL_AURA_REMOVED" then
+			snapshot.removed[spell]=GetTime()
+		end
+		local cache=snapshot.cache[spell]
+		if cache then
+			if param=="SPELL_AURA_APPLIED" or param=="SPELL_AURA_REFRESH" then
+				snapshot:Calc()
+				cache[dest]=cache.value
+			elseif param=="SPELL_AURA_REMOVED" then
+				cache[dest]=nil
+			end
+		end
+	end
+end)
 
 -- AURA TRACKER
 
@@ -212,13 +249,13 @@ function AuraTracker:Cache(unit)
 	local i,id,count,dur,expi,auth,_=0,0
 	while id do
 		i=i+1
-		_,_,_,count,_,dur,expi,auth,_,_,id=UnitBuff(unit,i)
+		_,_,count,_,dur,expi,auth,_,_,id=UnitBuff(unit,i)
 		if id and not cache[id] then cache[id]={count=count,dur=dur,expi=expi,auth=auth,bufftype="buff"} end
 	end
 	i,id,count,dur,expi,auth=0,0
 	while id do
 		i=i+1
-		_,_,_,count,_,dur,expi,auth,_,_,id=UnitDebuff(unit,i)
+		_,_,count,_,dur,expi,auth,_,_,id=UnitDebuff(unit,i)
 		if id and not cache[id] then cache[id]={count=count,dur=dur,expi=expi,auth=auth,bufftype="debuff"} end
 	end
 end
@@ -713,27 +750,17 @@ function AuraTracker:GetOptions()
 		get=getter,
 		set=setter,
 		args={
-			-- enabled={
-				-- type="toggle",
-				-- name="Enable",
-				-- desc="Enable the module.",
-				-- order=1,
-			-- },
-			-- auratrk={
-				-- type="header",
-				-- name="Aura Tracker",
-				-- order=2,
-			-- },
 			defaultsgroup={
 				type="group",
 				name="Default Settings",
-				-- childGroups="tree",
 				order=20,
 				args={
 					enabled={
 						type="toggle",
 						name="Enable",
 						desc="Enable the module.",
+						get=function() return self:IsEnabled() end,
+						set=function(i,v) if v then self:Enable() else self:Disable() end db.enabled=v end,
 						order=0,
 					},
 					nl0={type="description",name=" ",order=0.1},

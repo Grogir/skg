@@ -7,7 +7,7 @@
 --------------------------------------------------
 
 local AddonName,SKG=...
-local ComboPoints=SKG:NewModule("ComboPoints","AceEvent-3.0")
+ ComboPoints=SKG:NewModule("ComboPoints","AceEvent-3.0")
 local db
 
 local defaults={global={
@@ -19,8 +19,8 @@ local defaults={global={
 	anchor="CENTER",
 	parent="UIParent",
 	paranchor="CENTER",
-	x=0-20,
-	y=-295+65,
+	x=0,
+	y=-200,
 	texoff="Interface\\COMMON\\Indicator-Gray",
 	texon="Interface\\COMMON\\Indicator-Yellow",
 }}
@@ -44,32 +44,32 @@ end
 
 -- CP TRACKER
 
-ComboPoints.frame=CreateFrame("FRAME",nil,UIParent)
-local COMBOS_TYPE=4
 ComboPoints.specdata={
-	[65]=SPELL_POWER_HOLY_POWER, -- holy paladin
-	[66]=SPELL_POWER_HOLY_POWER, -- prot paladin
-	[70]=SPELL_POWER_HOLY_POWER, -- ret paladin
-	[103]=COMBOS_TYPE, -- feral druid
-	[259]=COMBOS_TYPE, -- assass rogue
-	[260]=COMBOS_TYPE, -- outlaw rogue
-	[261]=COMBOS_TYPE, -- sub rogue
+	[62]=Enum.PowerType.ArcaneCharges, -- arcane mage
+	[70]=Enum.PowerType.HolyPower, -- ret paladin
+	[103]=Enum.PowerType.ComboPoints, -- feral druid
+	[259]=Enum.PowerType.ComboPoints, -- assass rogue
+	[260]=Enum.PowerType.ComboPoints, -- outlaw rogue
+	[261]=Enum.PowerType.ComboPoints, -- sub rogue
+	[265]=Enum.PowerType.SoulShards, -- aff warlock
+	[266]=Enum.PowerType.SoulShards, -- dest warlock
+	[267]=Enum.PowerType.SoulShards, -- demo warlock
+	[269]=Enum.PowerType.Chi, -- ww monk
 }
 ComboPoints.points={}
 function ComboPoints:OnEnable()
+	self.frame=self.frame or CreateFrame("FRAME",nil,UIParent)
 	local spec=GetSpecialization()
 	if spec then spec=GetSpecializationInfo(spec) end
 	local specdata=self.specdata[spec]
 	if specdata then
 		local maxcp=UnitPowerMax("player",specdata)
-		-- local cfg=self.config
 		self.frame:SetSize((maxcp-1)*abs(db.offx)+db.iconsize,(maxcp-1)*abs(db.offy)+db.iconsize)
 		self.frame:SetPoint(db.anchor,db.parent,db.paranchor,db.x,db.y)
 		self.count=-1
 		for i=1,maxcp do
 			local f=CreateFrame("FRAME",nil,self.frame)
 			f:SetSize(db.iconsize,db.iconsize)
-			-- f:SetPoint("TOPLEFT",(i-1)*db.offx,(i-1)*db.offy)
 			f:SetPoint("CENTER",(i-(maxcp+1)/2)*db.offx,(i-(maxcp+1)/2)*db.offy)
 			f.texoff=f:CreateTexture()
 			f.texoff:SetAllPoints()
@@ -81,17 +81,17 @@ function ComboPoints:OnEnable()
 			f:Show()
 			self.points[i]=f
 		end
-		self:RegisterEvent("UNIT_POWER","Update")
+		self:RegisterEvent("UNIT_POWER_UPDATE","Update")
 		self.combotype=specdata
+		self:Update()
 	end
-	-- self:ApplySettings()
 end
 function ComboPoints:OnDisable()
 	for i=1,#self.points do
 		self.points[i]:Hide()
 	end
 	wipe(self.points)
-	self:UnregisterEvent("UNIT_POWER")
+	self:UnregisterEvent("UNIT_POWER_UPDATE")
 end
 function ComboPoints:Update()
 	local count=UnitPower("player",self.combotype)

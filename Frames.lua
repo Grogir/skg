@@ -71,6 +71,9 @@ local defaults={global={
 	disablechaninv=false,
 	minimaptweaks=true,
 	classportrait=false,
+	safequeue=true,
+	macrolimit=true,
+	floatingcombattext=false,
 	framescolor=0.4,
 	frameratex=0,
 	frameratey=-350,
@@ -82,6 +85,7 @@ local defaults={global={
 	containery=10,
 	talkingheadx=0,
 	talkingheady=155,
+	objtracker=true,
 	objtrackerx=10,
 }}
 local arenatest=false
@@ -96,32 +100,35 @@ function Frames:OnInitialize()
 	SKG:RegisterModuleOptions("Frames",self.options,"L Frames")
 end
 function Frames:OnEnable()
-	self:ApplySettings()
-end
-function Frames:OnDisable()
-end
-function Frames:ApplySettings()
 	self:UnitFrames()
 	self:Misc()
+end
+function Frames:OnDisable()
+	ReloadUI()
+end
+function Frames:ApplySettings()
+	if db.enabled then
+		self:UnitFrames()
+		self:Misc()
+	end
 end
 
 -- FRAMES
 
-local hbf
 function Frames:UnitFrames()
 	-- Player & Targets frames
 	PlayerFrame:ClearAllPoints()
-	PlayerFrame:SetPoint("CENTER",UIParent,"CENTER",db.playerx,db.playery) -- -350,300
+	PlayerFrame:SetPoint("CENTER",UIParent,"CENTER",db.playerx,db.playery)
 	PlayerFrame:SetUserPlaced(true)
 	if db.playerscale>0 then PlayerFrame:SetScale(db.playerscale) end
 
 	TargetFrame:ClearAllPoints()
-	TargetFrame:SetPoint("CENTER",UIParent,"CENTER",db.targetx,db.targety) -- 280,300
+	TargetFrame:SetPoint("CENTER",UIParent,"CENTER",db.targetx,db.targety)
 	TargetFrame:SetUserPlaced(true)
 	if db.targetscale>0 then TargetFrame:SetScale(db.targetscale) end
 
 	FocusFrame:ClearAllPoints()
-	FocusFrame:SetPoint("CENTER",UIParent,"CENTER",db.focusx,db.focusy) -- 400,-260 400,-100
+	FocusFrame:SetPoint("CENTER",UIParent,"CENTER",db.focusx,db.focusy)
 	FocusFrame:SetUserPlaced(true)
 	if db.focusscale>0 then FocusFrame:SetScale(db.focusscale) end
 
@@ -154,6 +161,17 @@ function Frames:UnitFrames()
 	TotemFrame:SetPointNew("TOPLEFT",PlayerFrame,"BOTTOMLEFT",db.totemframex,db.totemframey)
 	
 	-- Arena frames
+	local function hbf(f,n)
+		f.healthbar:SetMinMaxValues(0,100)
+		f.healthbar:SetValue(n)
+		f.healthbar.forceHideText=false
+		f.manabar:SetMinMaxValues(0,100)
+		f.manabar:SetValue(n)
+		f.healthbar.forceHideText=false
+		f.healthbar:SetStatusBarColor(0,1,0)
+		f.manabar:SetStatusBarColor(0,0,1)
+	end
+	
 	local foctex="Interface\\TARGETINGFRAME\\UI-TargetingFrame-NoLevel"
 	for i=1,5 do
 		local pt,rel,relpt,x,y
@@ -232,7 +250,7 @@ function Frames:UnitFrames()
 		pt,rel,relpt,x,y=pet:GetPoint()
 		pet:SetPoint(pt,rel,relpt,db.arenapetx,db.arenapety)
 
-		if arenatest then
+		if arenatest and i<4 then
 			cast:Show()
 			cast:SetAlpha(0.5)
 			cast.fadeOut=nil
@@ -241,11 +259,7 @@ function Frames:UnitFrames()
 		end
 	end
 	if arenatest then ArenaEnemyFrames:Show() else ArenaEnemyFrames:Hide() end
-	-- ArenaEnemyBackground:SetPoint("RIGHT", "ArenaEnemyFrame1", "RIGHT", 30, 0)
-	-- /run GetNumArenaOpponents=function() return 3 end UpdateArenaEnemyBackground(1)
 	
-	--local raidparty = _G["RaidMemberFrame1"]
-	--print(raidparty);
 	-- Party frames
 	for i=1,4 do
 		local party=_G["PartyMemberFrame"..i]
@@ -325,13 +339,8 @@ end
 
 function Frames:Misc()
 	-- Hide art
-	if db.hideart then
-		MainMenuBarLeftEndCap:Hide()
-		MainMenuBarRightEndCap:Hide()
-	else
-		MainMenuBarLeftEndCap:Show()
-		MainMenuBarRightEndCap:Show()
-	end
+	MainMenuBarArtFrame.LeftEndCap:SetShown(not db.hideart)
+	MainMenuBarArtFrame.RightEndCap:SetShown(not db.hideart)
 
 	-- Disable text on portrait
 	if not PlayerHitIndicator.ShowNew then
@@ -358,6 +367,8 @@ function Frames:Misc()
 	-- Disable invites
 	if db.disablechaninv then
 		UIParent:UnregisterEvent("CHANNEL_INVITE_REQUEST")
+	else
+		UIParent:RegisterEvent("CHANNEL_INVITE_REQUEST")
 	end
 	-- Move some UIParent frames
 	FramerateLabel.ignoreFramePositionManager=true
@@ -386,20 +397,25 @@ function Frames:Misc()
 	-- provoque taint dans UIParent et ContainerFrame
 	UIPARENT_MANAGED_FRAME_POSITIONS.CONTAINER_OFFSET_X.baseX=db.containerx
 	UIPARENT_MANAGED_FRAME_POSITIONS.CONTAINER_OFFSET_Y.yOffset=db.containery
+	ObjectiveTrackerFrame:SetShown(db.objtracker)
 	UIPARENT_MANAGED_FRAME_POSITIONS.OBJTRACKER_OFFSET_X.baseX=db.objtrackerx
 	VISIBLE_CONTAINER_SPACING=-25
 	CONTAINER_SPACING=-4
 
 	-- Minimap Tweaks
+	MinimapZoomIn:SetShown(not db.minimaptweaks)
+	MinimapZoomOut:SetShown(not db.minimaptweaks)
+	Minimap:EnableMouseWheel(db.minimaptweaks)
 	if db.minimaptweaks then
-		MinimapZoomIn:Hide()
-		MinimapZoomOut:Hide()
-		Minimap:EnableMouseWheel(true)
 		Minimap:SetScript("OnMouseWheel",function(self,delta)
 			if delta>0 then Minimap_ZoomIn() else Minimap_ZoomOut() end
 		end)
 		MiniMapTracking:ClearAllPoints()
 		MiniMapTracking:SetPoint("TOPRIGHT",-26,7)
+	else
+		Minimap:SetScript("OnMouseWheel",nop)
+		MiniMapTracking:ClearAllPoints()
+		MiniMapTracking:SetPoint("TOPRIGHT",9,-45)
 	end
 
 	-- Dark Frames
@@ -418,10 +434,81 @@ function Frames:Misc()
 	}) do
 		v:SetVertexColor(db.framescolor,db.framescolor,db.framescolor)
 	end
+
+	-- SafeQueue
+	if db.safequeue then
+		PVPReadyDialog.leaveButton:Disable()
+		if not self.sq then
+			local sq=CreateFrame("FRAME",nil,UIParent)
+			self.sq=sq
+			sq.q={}
+			sq:RegisterEvent("UPDATE_BATTLEFIELD_STATUS")
+			sq:SetScript("OnEvent",function()
+				for i=1,GetMaxBattlefieldID() do
+					local status=GetBattlefieldStatus(i)
+					if status=="confirm" then
+						if not sq.q[i] then
+							sq.q[i]=GetTime()+GetBattlefieldPortExpiration(i)
+						end
+					else
+						sq.q[i]=nil
+					end
+				end
+			end)
+			sq:SetScript("OnUpdate",function()
+				for i=1,GetMaxBattlefieldID() do
+					if sq.q[i] then
+						local secs=sq.q[i]-GetTime()
+						local color=secs>20 and "f20ff20" or secs>10 and "fffff00" or "fff0000"
+						PVPReadyDialog.label:SetText("|cf"..color..SecondsToTime(secs).."|r")
+					end
+				end
+			end)
+		end
+		self.sq:Show()
+	else
+		PVPReadyDialog.leaveButton:Enable()
+		if self.sq then
+			self.sq:Hide()
+		end
+	end
+
+	-- Macro Limit
+	if db.macrolimit then
+		self.macro=CreateFrame("FRAME")
+		self.macro:RegisterEvent("ADDON_LOADED")-- à test
+		self.macro:SetScript("OnEvent",function(_,_,name)
+			if name=="Blizzard_MacroUI" then MAX_CHARACTER_MACROS=36 end
+		end)
+	end
 	
-	-- Talking Head
+	-- Floating Combat Text
+	local function initFCT(self)
+		if not self.init and CombatText_UpdateDisplayedMessages then
+			self.init=true
+			hooksecurefunc("CombatText_UpdateDisplayedMessages",function()
+				COMBAT_TEXT_SPACING=5
+				COMBAT_TEXT_LOCATIONS.startY=380
+				COMBAT_TEXT_LOCATIONS.endY=480
+				CombatText_ClearAnimationList()
+			end)
+			COMBAT_TEXT_HEIGHT=20
+			COMBAT_TEXT_CRIT_MAXHEIGHT=30
+			COMBAT_TEXT_CRIT_MINHEIGHT=24
+			COMBAT_TEXT_SCROLLSPEED=1
+			COMBAT_TEXT_FADEOUT_TIME=0
+			CombatText_UpdateDisplayedMessages()
+		end
+	end
+	if db.floatingcombattext and not self.fct then
+		self.fct=CreateFrame("Frame")
+		self.fct:RegisterEvent("PLAYER_ENTERING_WORLD")
+		self.fct:SetScript("OnEvent",initFCT)
+		initFCT(self.fct)
+	end
 end
 
+-- Talking Head
 Frames.talkinghead=CreateFrame("Frame") -- ne marche pas dans la fonction à cause du LoadAddOn ArenaUI qui devrait être delayé
 Frames.talkinghead:RegisterEvent("ADDON_LOADED")
 Frames.talkinghead:SetScript("OnEvent",
@@ -432,17 +519,6 @@ function(s,e,addon)
 		TalkingHeadFrame:SetPoint("BOTTOM",UIParent,"BOTTOM",db.talkingheadx,db.talkingheady)
 	end
 end)
-
-hbf=function(f,n)
-	f.healthbar:SetMinMaxValues(0,100);
-	f.healthbar:SetValue(n);
-	f.healthbar.forceHideText=false;
-	f.manabar:SetMinMaxValues(0,100);
-	f.manabar:SetValue(n);
-	f.healthbar.forceHideText=false;
-	f.healthbar:SetStatusBarColor(0,1,0);
-	f.manabar:SetStatusBarColor(0,0,1);
-end
 
 -- OPTIONS
 
@@ -471,15 +547,15 @@ function Frames:GetOptions()
 				set=function(i,v) if v then self:Enable() else self:Disable() end db.enabled=v end,
 				order=0,
 			},
-			reset={
-				type="execute",
-				name="Reset settings",
-				func=function() SKG:ResetOptions(Frames.options.args,db,defaults.global) self:ApplySettings() end,
-				order=0,
-			},
+			-- reset={
+				-- type="execute",
+				-- name="Reset settings",
+				-- func=function() SKG:ResetOptions(Frames.options.args,db,defaults.global) self:ApplySettings() end,
+				-- order=0,
+			-- },
 			playertargets={
 				type="group",
-				name="Player - Targets",
+				name="Player/Targeting",
 				order=1,
 				args={
 					player={
@@ -589,7 +665,7 @@ function Frames:GetOptions()
 			},
 			resource={
 				type="group",
-				name="Resources - Pets",
+				name="Resources/Pets",
 				order=6,
 				args={
 					runeframe={
@@ -651,24 +727,59 @@ function Frames:GetOptions()
 					},
 				}
 			},
-			-- pettotems={
-				-- type="group",
-				-- name="Pet & totems",
-				-- order=7,
-				-- args={
-				-- }
-			-- },
-			-- petframe={
-				-- type="group",
-				-- name="Petframe",
-				-- order=8,
-				-- args={
-				-- }
-			-- },
+			party={
+				type="group",
+				name="Party",
+				order=9,
+				args={
+					partyframes={
+						type="header",
+						name="Party Frames",
+						order=0
+					},
+					partyx={
+						type="range",
+						name="X",
+						softMin=-1000,softMax=1000,step=1,bigStep=10,
+						order=1
+					},
+					partyy={
+						type="range",
+						name="Y",
+						softMin=-600,softMax=600,step=1,bigStep=10,
+						order=2
+					},
+					partyscale={
+						type="range",
+						name="Scale",
+						min=0,max=3.0,step=0.01,bigStep=0.1,
+						order=3
+					},
+					partyspace={
+						type="range",
+						name="Space",
+						softMin=-150,softMax=150,step=1,bigStep=5,
+						order=4
+					},
+					partytextsize={
+						type="range",
+						name="Text Size",
+						min=1,max=16,step=1,bigStep=1,
+						order=5
+					},
+					partytest={
+						type="toggle",
+						name="Test",
+						get=function() return partytest end,
+						set=function(i,v) partytest=v self:ApplySettings() end,
+						order=-1
+					},
+				}
+			},
 			arena={
 				type="group",
 				name="Arena",
-				order=9,
+				order=10,
 				args={
 					arenaframes={
 						type="header",
@@ -774,55 +885,6 @@ function Frames:GetOptions()
 						name="Y",
 						softMin=-100,softMax=100,step=1,bigStep=1,
 						order=32
-					},
-				}
-			},
-			party={
-				type="group",
-				name="Party",
-				order=10,
-				args={
-					partyframes={
-						type="header",
-						name="Party Frames",
-						order=0
-					},
-					partyx={
-						type="range",
-						name="X",
-						softMin=-1000,softMax=1000,step=1,bigStep=10,
-						order=1
-					},
-					partyy={
-						type="range",
-						name="Y",
-						softMin=-600,softMax=600,step=1,bigStep=10,
-						order=2
-					},
-					partyscale={
-						type="range",
-						name="Scale",
-						min=0,max=3.0,step=0.01,bigStep=0.1,
-						order=3
-					},
-					partyspace={
-						type="range",
-						name="Space",
-						softMin=-150,softMax=150,step=1,bigStep=5,
-						order=4
-					},
-					partytextsize={
-						type="range",
-						name="Text Size",
-						min=1,max=16,step=1,bigStep=1,
-						order=5
-					},
-					partytest={
-						type="toggle",
-						name="Test",
-						get=function() return partytest end,
-						set=function(i,v) partytest=v self:ApplySettings() end,
-						order=-1
 					},
 				}
 			},
@@ -933,22 +995,37 @@ function Frames:GetOptions()
 						name="Class Portrait",
 						order=8
 					},
+					safequeue={
+						type="toggle",
+						name="Safe PVP Queue",
+						order=9
+					},
+					macrolimit={
+						type="toggle",
+						name="Extend Macro Limit",
+						order=10
+					},
+					floatingcombattext={
+						type="toggle",
+						name="Shorter Floating Combat Text",
+						order=11
+					},
 					framerate={
 						type="header",
 						name="Frame Rate",
-						order=10
+						order=15
 					},
 					frameratex={
 						type="range",
 						name="X",
 						softMin=-1000,softMax=1000,step=1,bigStep=10,
-						order=11
+						order=16
 					},
 					frameratey={
 						type="range",
 						name="Y",
 						softMin=-600,softMax=600,step=1,bigStep=5,
-						order=12
+						order=17
 					},
 					eab={
 						type="header",
@@ -1034,6 +1111,11 @@ function Frames:GetOptions()
 						name="Objectives X",
 						softMin=-500,softMax=500,step=1,bigStep=5,
 						order=102
+					},
+					objtracker={
+						type="toggle",
+						name="Objective Tracker",
+						order=103
 					},
 				}
 			},

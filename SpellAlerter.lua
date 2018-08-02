@@ -5,6 +5,8 @@
 -- by Florian "Khujara" FALAVEL
 --
 --------------------------------------------------
+-- MAJ DB
+-- TODO(flo) : maybe some sounds
 
 local AddonName,SKG=...
 local SpellAlerter=SKG:NewModule("SpellAlerter","AceEvent-3.0")
@@ -15,6 +17,7 @@ local defaults={global={
 	x=0,
 	y=100,
 	iconsize=100,
+	duration=1.5,
 	spelllist=
 	{
 		-- MAGE
@@ -30,88 +33,75 @@ local defaults={global={
 		[161355]="S", -- Polymorph(penguin)
 		[161354]="S", -- Polymorph(monkey)
 		[161372]="S", -- Polymorph(turtle2)
-		[45438]="NS", -- Ice Block
-		[12472]="NS", -- Icy Veins
-		[11958]="NS", -- Cold Snap
-		[44572]="NS", -- Deep Freeze
+		[45438]="N", -- Ice Block
+		[12472]="N", -- Icy Veins
 		[113724]="S", -- Ring of Frost
 
 		-- SHAMAN
-		[16188]="NS", -- Ancestral Swiftness
-		[79206]="S", -- Spiritwalker's Grace
-		[8143]="S", -- Temor Totem
-		[8177]="S", -- Grounding Totem
+		[79206]="N", -- Spiritwalker's Grace
 		[108280]="S", -- Healing Tide Totem
-		[114049]="NS", -- Ascendance
-		[114050]="NS", -- Ascendance
-		[114051]="NS", -- Ascendance
-		[114052]="NS", -- Ascendance
+		[114049]="N", -- Ascendance
+		[114050]="N", -- Ascendance
+		[114051]="N", -- Ascendance
+		[114052]="N", -- Ascendance
 		[51514]="S", -- Hex
-		[108269]="NS", -- Capacitor Totem
+		[192058]="N", -- Capacitor Totem
+		[204331]="N", -- Totem de réplique
 
 		-- HUNTER
-		[1499]="S", -- Freezing Trap
-		[19574]="NS", -- Bestial Wrath
-		[19386]="NS", -- Wyvern Sting
+		-- [1499]="S", -- Freezing Trap
+		[19574]="N", -- Bestial Wrath
+		[19386]="N", -- Wyvern Sting
 
 		-- DRUID
-		[132158]="S", -- Nature's Swiftness
-		[29166]="NS", -- Innervate
+		[29166]="N", -- Innervate
 		[33786]="S", -- Cyclone
-		[108291]="NS", -- Heart of the wild
-		[108292]="NS", -- Heart of the wild
-		[108293]="NS", -- Heart of the wild
-		[108294]="NS", -- Heart of the wild
-		[33891]="NS", -- Incarnation Tree of Life
-		[102543]="NS", -- Incarnation King of the Jungle
-		[102560]="NS", -- Incarnation Chosen of Elune
+		[33891]="N", -- Incarnation Tree of Life
+		[102543]="N", -- Incarnation King of the Jungle
+		[102560]="N", -- Incarnation Chosen of Elune
 		[22812]="S", -- Barksin
-		--[69369]="P", -- Predatory Swiftness
+		[774]="S", -- TEST
 
 		-- PRIEST
-		[605]="NS", -- Dominate Mind
-		[586]="NS", -- Fade
+		[605]="N", -- Dominate Mind
+		[586]="N", -- Fade
 		[10060]="S", -- Power Infusion
-		[6346]="S", -- Fear Ward
-		[8122]="NS", -- Psychic Scream
-		[33206]="NS", -- Pain Suppression
+		[8122]="N", -- Psychic Scream
+		[33206]="N", -- Pain Suppression
 		--[17]="S", -- TEST
 
 		-- DEATHKNIGHT
-		[108200]="NS", -- Remorseless Winter
 		[77606]="S", -- Dark Simulacrum
-		[108201]="NS", -- Desecrated Ground
+		[108201]="N", -- Desecrated Ground
 
 		-- WARRIOR
 		[23920]="S", --Spell Reflection
-		[114028]="S", --Mass Spell Reflection
-		[1719]="NS", -- Recklesness
+		[1719]="N", -- Recklesness
 		[107570]="S", --Storm Bolt
 
 		-- ROGUE
-		[51713]="NS", -- Shadow Dance
-		[76577]="NS", -- Smoke Bomb
-		[31224]="NS", -- Cloak of Shadows
+		-- [51713]="N", -- Shadow Dance
+		[76577]="N", -- Smoke Bomb
+		[31224]="N", -- Cloak of Shadows
 
 		-- WARLOCK
 		[5782]="S", -- Fear
-		[108482]="NS", --Unbound Will
-		[113861]="NS", -- Dark Souls
-		[113858]="NS", -- Dark Souls
-		[113860]="NS", -- Dark Souls
+		[113858]="N", -- Dark Souls
+		[113860]="N", -- Dark Souls
 
 		-- MONK
-		[122470]="NS", -- Touch of Karma
+		[122470]="N", -- Touch of Karma
 
 		-- PALADIN
 		[1022]="S", -- Hand of Protection
 		[6940]="S", -- Hand of Sacrifice
-		[31821]="NS", -- Devotion Aura
-		[31884]="NS", -- Avenging Wrath
-		[31842]="NS", -- Avenging Wrath
-		[1044]="NS", -- Hand of Freedom
+		[31821]="N", -- Devotion Aura
+		[31884]="N", -- Avenging Wrath
+		[1044]="N", -- Hand of Freedom
 		[20066]="S", -- Repentance
-		[642]="NS" -- Divine Shield
+		[642]="N", -- Divine Shield
+
+		-- [12]="N", -- test
 	},
 }}
 
@@ -120,87 +110,135 @@ function SpellAlerter:OnInitialize()
 	db=self.db.global
 	self:SetEnabledState(db.enabled)
 	self.options=self:GetOptions()
+	self:LoadSpellList()
 	SKG:RegisterModuleOptions("SpellAlerter",self.options,"L SpellAlerter")
 end
 
--- TODO(flo) : add Soul Reaper !!! Change database!
--- TODO(flo) : customize icon display duration, maybe some sounds and later database?
-
 -- SPELL ALERTER
 
-function SpellAlerter:OnEnable()
-
-local COMBATLOG_TARGET=COMBATLOG_OBJECT_TARGET --DEBUG
-local COMBATLOG_FRIENDLY=COMBATLOG_OBJECT_REACTION_FRIENDLY --DEBUG
-local COMBATLOG_HOSTILE=COMBATLOG_OBJECT_REACTION_HOSTILE
-local COMBATLOG_PLAYER=COMBATLOG_OBJECT_TYPE_PLAYER --DEBUG
-local SpellCastEvents={SPELL_CAST_START=1,SPELL_CAST_SUCCESS=1,SPELL_CREATE=1,SPELL_AURA_APPLIED=1}
-local band=bit.band
-local saDB = db.spelllist
-
-local soundDB={NS=0,S=1,P=0,PS=1}
-local COMBAT_LOG=COMBATLOG_HOSTILE
--- local COMBAT_LOG=COMBATLOG_PLAYER
-self.sa=CreateFrame("FRAME")
-sa = self.sa
-local sat=sa:CreateTexture(nil,"BACKGROUND")
-sat:SetAllPoints(self.sa)
-sat:SetTexCoord(0.07,0.93,0.07,0.93)
-sa:SetPoint("CENTER",UIParent,"CENTER",db.x,db.y)
-sa:SetWidth(db.iconsize)
-sa:SetHeight(db.iconsize)
-sa:SetScript("OnEvent",function(self,event,...) self[event](self,...) end)
-sa:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-currenticon=0
-saStart=0
-saDur=1.5
-function sa:COMBAT_LOG_EVENT_UNFILTERED(_,eventtype,hideCaster,srcGUID,srcName,srcFlags,_,dstGUID,dstName,dstFlags,_,spellID,spellName,_,auraType)
-	if SpellCastEvents[eventtype] and band(srcFlags,COMBAT_LOG)==COMBAT_LOG  and saDB[spellID] then
-		if eventtype=="SPELL_AURA_APPLIED" and saDB[spellID]~="PS" and saDB[spellID]~="P" then return end
-		Alert(spellID)
-	end
-end
-function Alert(spellID)
-	sa:SetScript("OnUpdate",SAOnUpdate)
-	icon=select(3,GetSpellInfo(spellID))
-	sat:SetTexture(icon)
-	currenticon=1
-	saStart=GetTime()
-	sa:Show()
-	if(soundDB[saDB[spellID]]==1) then
+function SpellAlerter:Alert(spellID)
+	self.frame:SetScript("OnUpdate",function()
+		if(self.currenticon==0) then self.frame:Hide() return end
+		if(self.currenticon==1) then
+			if GetTime()>self.start+db.duration then
+				self.frame:Hide()
+				self.currenticon=0
+				self.start=0
+				self.frame:SetScript("OnUpdate",nil)
+			end
+		end
+	end)
+	self.frame.t:SetTexture(select(3,GetSpellInfo(spellID)))
+	self.currenticon=1
+	self.start=GetTime()
+	self.frame:Show()
+	if db.spelllist[spellID]=="S" then
 		PlaySound(5275)
 	end
 end
-function SAOnUpdate()
-	if(currenticon==0) then sa:Hide() return end
-	if(currenticon==1) then
-		if(GetTime()>saStart+saDur) then
-			sa:Hide()
-			currenticon=0
-			saStart=0
-			sa:SetScript("OnUpdate",nil)
+
+function SpellAlerter:OnEnable()
+	local SpellCastEvents={SPELL_CAST_START=1,SPELL_CAST_SUCCESS=1,SPELL_CREATE=1}--,SPELL_AURA_APPLIED=1}
+	local band=bit.band
+	local COMBAT_LOG=COMBATLOG_OBJECT_REACTION_HOSTILE
+	-- local COMBAT_LOG=COMBATLOG_OBJECT_TYPE_PLAYER -- debug purposes
+
+	local f=CreateFrame("FRAME")
+	self.frame=f
+	f.t=f:CreateTexture(nil,"BACKGROUND")
+	f.t:SetAllPoints(f)
+	f.t:SetTexCoord(0.07,0.93,0.07,0.93)
+	f:SetPoint("CENTER",UIParent,"CENTER",db.x,db.y)
+	f:SetSize(db.iconsize,db.iconsize)
+	
+	f:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+	f:SetScript("OnEvent",function()
+		local _,eventtype,_,_,_,srcFlags,_,_,_,_,_,spellID,_,_,_=CombatLogGetCurrentEventInfo()
+		if SpellCastEvents[eventtype] and band(srcFlags,COMBAT_LOG)==COMBAT_LOG and db.spelllist[spellID] then
+			-- if eventtype=="SPELL_AURA_APPLIED" and self.saDB[spellID]~="PS" and self.saDB[spellID]~="P" then return end
+			self:Alert(spellID)
 		end
-	end
+	end)
+	self.currenticon=0
+	self.start=0
 end
 
-end
 function SpellAlerter:OnDisable()
+	if self.frame then
+		self.frame:UnregisterAllEvents()
+		self.frame:Hide()
+		self.frame=nil
+	end
 end
 function SpellAlerter:ApplySettings()
-	self.sa:SetWidth(db.iconsize)
-	self.sa:SetHeight(db.iconsize)
-	self.sa:SetPoint("CENTER",UIParent,"CENTER",db.x,db.y)
+	self.frame:SetSize(db.iconsize,db.iconsize)
+	self.frame:SetPoint("CENTER",UIParent,"CENTER",db.x,db.y)
+end
+function SpellAlerter:ReloadOptions()
+	self.options=self:GetOptions()
+	self:LoadSpellList()
+	SKG:RegisterModuleOptions("SpellAlerter",self.options,"L SpellAlerter")
 end
 
 -- OPTIONS
 
 local function getter(info)
-	return db[info.arg or info[#info]]
+	local name=info.arg or info[#info]
+	if tonumber(name) then
+		return db.spelllist[tonumber(name)]=="S" and true or false
+	end
+	return db[name]
 end
 local function setter(info,value)
-	db[info.arg or info[#info]]=value
+	local name=info.arg or info[#info]
+	if tonumber(name) then
+		db.spelllist[tonumber(name)]=value and "S" or "N"
+	else
+		db[name]=value
+	end
 	SpellAlerter:ApplySettings()
 end
+function SpellAlerter:LoadSpellList()
+	local i=1
+	local t={}
+	for id,s in pairs(db.spelllist) do
+		if s then
+			t[i]={id,s,GetSpellInfo(id) or "?"}
+			i=i+1
+		end
+	end
+	table.sort(t,function(a,b) return a[3]==b[3] and a[1]<b[1] or a[3]<b[3] end)
+	for i=1,#t do
+		local id,s=t[i][1],t[i][2]
+		local name,_,icon=GetSpellInfo(id)
+		name=name or "Invalid spell"
+		SpellAlerter.options.args["d"..id]={
+			type="description",
+			name=name.." |cff666666("..id..")|r",
+			fontSize="medium",
+			image=icon,
+			width="double",
+			order=i*3+30
+		}
+		SpellAlerter.options.args[tostring(id)]={
+			type="toggle",
+			name="Sound",
+			width="half",
+			order=i*3+31
+		}
+		SpellAlerter.options.args["r"..id]={
+			type="execute",
+			name="Remove",
+			func=function()
+				if defaults.global.spelllist[id] then db.spelllist[id]=false else db.spelllist[id]=nil end --on ne peut pas supprimer les defaults
+				self:ReloadOptions()
+			end,
+			width="half",
+			order=i*3+32
+		}
+	end
+end
+local spellid=""
 function SpellAlerter:GetOptions()
 	return {
 		order=5,
@@ -215,11 +253,13 @@ function SpellAlerter:GetOptions()
 				type="toggle",
 				name="Enable",
 				desc="Enable the module",
-				order=1
+				get=function() return self:IsEnabled() end,
+				set=function(i,v) if v then self:Enable() else self:Disable() end db.enabled=v end,
+				order=1,
 			},
-			sa={
+			h1={
 				type="header",
-				name="Spell Alerter",
+				name="Settings",
 				order=10
 			},
 			x={
@@ -240,11 +280,47 @@ function SpellAlerter:GetOptions()
 				min=0,max=500,step=1,bigStep=5,softMax=200,
 				order=13
 			},
+			duration={
+				type="range",
+				name="Alert Duration",
+				min=0,max=60,step=0.1,bigStep=0.1,softMax=5,
+				order=14
+			},
 			test={
 				type="execute",
 				name="Test",
-				func=function() Alert(118) end,
-				order=14
+				func=function() if db.enabled then self:Alert(118) end end,
+				order=15
+			},
+			h2={
+				type="header",
+				name="Spell List",
+				order=20
+			},
+			space={
+				type="description",
+				name="",
+				width="normal",
+				order=21
+			},
+			spellid={
+				type="input",
+				name="New spell",
+				get=function() return spellid end,
+				set=function(i,v) spellid=v end,
+				desc="Spell id",
+				order=22
+			},
+			add={
+				type="execute",
+				name="Add",
+				width="half",
+				func=function()
+					local id=tonumber(spellid)
+					if id and not db.spelllist[id] then db.spelllist[id]="N" end
+					self:ReloadOptions()
+				end,
+				order=23
 			},
 		}
 	}

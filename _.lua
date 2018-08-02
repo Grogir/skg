@@ -1,7 +1,7 @@
 --------------------------------------------------
 --
 -- _______________.lua
--- created __/__/2014
+-- created __/__/2018
 -- by Pierre-Yves "Grogir" DUTREUILH & Florian "Khujara" FALAVEL
 --
 --------------------------------------------------
@@ -25,13 +25,16 @@ end
 -- _______________
 
 function _______________:OnEnable()
-	-- self:ApplySettings()
 end
+
 function _______________:OnDisable()
 end
+
 function _______________:ApplySettings()
-	self:OnDisable()
-	self:OnEnable()
+	if db.enabled then
+		self:OnDisable()
+		self:OnEnable()
+	end
 end
 
 -- OPTIONS
