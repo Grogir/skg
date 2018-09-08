@@ -381,26 +381,20 @@ function Frames:Misc()
 	ExtraActionBarFrame.ignoreFramePositionManager=true
 	-- /run ExtraActionBarFrame:Show() ExtraActionButton1:Show() ExtraActionButton1.style:SetTexture("Interface\\ExtraButton\\Default") ExtraActionBarFrame.outro:Stop() ExtraActionBarFrame.intro:Play()
 
-	-- Power Bar Alt
-	if not PlayerPowerBarAlt.SetPointNew then
-		PlayerPowerBarAlt.ClearAllPointsNew=PlayerPowerBarAlt.ClearAllPoints
-		PlayerPowerBarAlt.ClearAllPoints=nop
-		PlayerPowerBarAlt.SetPointNew=PlayerPowerBarAlt.SetPoint
-		PlayerPowerBarAlt.SetPoint=nop
-	end
-	PlayerPowerBarAlt:ClearAllPointsNew()
-	PlayerPowerBarAlt:SetPointNew("CENTER",UIParent,"CENTER",db.powerbaraltx,db.powerbaralty)
-	-- PlayerPowerBarAlt.ignoreFramePositionManager=true
+	-- -- Power Bar Alt
+	PlayerPowerBarAlt:ClearAllPoints()
+	PlayerPowerBarAlt:SetPoint("CENTER",UIParent,"CENTER",db.powerbaraltx,db.powerbaralty)
+	PlayerPowerBarAlt:SetMovable(true)
+	PlayerPowerBarAlt:SetUserPlaced(true)
 	-- /run PlayerPowerBarAlt:Show() PlayerPowerBarAlt:SetSize(256,64) PlayerPowerBarAlt.frame:SetTexture("Interface/UnitPowerBarAlt/Fire_Horizontal_Frame")
 
 	-- FramePositionManager
-	-- provoque taint dans UIParent et ContainerFrame
 	UIPARENT_MANAGED_FRAME_POSITIONS.CONTAINER_OFFSET_X.baseX=db.containerx
 	UIPARENT_MANAGED_FRAME_POSITIONS.CONTAINER_OFFSET_Y.yOffset=db.containery
 	ObjectiveTrackerFrame:SetShown(db.objtracker)
 	UIPARENT_MANAGED_FRAME_POSITIONS.OBJTRACKER_OFFSET_X.baseX=db.objtrackerx
 	VISIBLE_CONTAINER_SPACING=-25
-	CONTAINER_SPACING=-4
+	CONTAINER_SPACING=-5
 
 	-- Minimap Tweaks
 	MinimapZoomIn:SetShown(not db.minimaptweaks)
@@ -513,7 +507,7 @@ Frames.talkinghead=CreateFrame("Frame") -- ne marche pas dans la fonction à cau
 Frames.talkinghead:RegisterEvent("ADDON_LOADED")
 Frames.talkinghead:SetScript("OnEvent",
 function(s,e,addon)
-	if addon=="Blizzard_TalkingHeadUI" then
+	if addon=="Blizzard_TalkingHeadUI" and db.enabled then
 		TalkingHeadFrame.ignoreFramePositionManager=true
 		TalkingHeadFrame:ClearAllPoints()
 		TalkingHeadFrame:SetPoint("BOTTOM",UIParent,"BOTTOM",db.talkingheadx,db.talkingheady)

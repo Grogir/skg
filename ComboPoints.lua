@@ -7,7 +7,7 @@
 --------------------------------------------------
 
 local AddonName,SKG=...
- ComboPoints=SKG:NewModule("ComboPoints","AceEvent-3.0")
+local ComboPoints=SKG:NewModule("ComboPoints","AceEvent-3.0")
 local db
 
 local defaults={global={

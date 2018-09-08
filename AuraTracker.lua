@@ -51,41 +51,82 @@ end
 -- TC
 
 snapshot=CreateFrame("Frame")
-snapshot.removed={[5215]=0,[145152]=0,[58984]=0}
-snapshot.cache={[1079]={},[155722]={},[106830]={},[155625]={}}
-function snapshot:Calc()
-	local cp=UnitPower("player",4)
-	if cp==0 then cp=5 end
-	local tf,sr,bt,stealth=1,1,1,1
-	if UnitBuff("player","Fureur du tigre") then tf=1.15 end
-	if UnitBuff("player","Rugissement sauvage") then sr=1.25 end
-	if UnitBuff("player","Griffes de sang") or GetTime()-snapshot.removed[145152]<0.05 then bt=1.4 end
-	if UnitBuff("player","Incarnation : Roi de la jungle") or UnitBuff("player","Rôder") or GetTime()-snapshot.removed[5215]<0.05 or UnitBuff("player","Camouflage dans l'ombre") or GetTime()-snapshot.removed[58984]<0.05 then stealth=2 end
-
-	snapshot.cache[1079].value=tf*sr*bt*cp/5
-	snapshot.cache[1079].valueget=tf*sr*bt
-	snapshot.cache[155722].value=tf*sr*bt*stealth
-	snapshot.cache[106830].value=tf*sr*bt
-	snapshot.cache[155625].value=tf*sr
-end
--- snapshot:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
--- snapshot:SetScript("OnUpdate",function() snapshot:Calc() end)
-snapshot:SetScript("OnEvent",function(_,_,_,param,_,src,_,_,_,dest,_,_,_,spell,_,_,_)
-	if src==UnitGUID("player") then
-		if snapshot.removed[spell] and param=="SPELL_AURA_REMOVED" then
-			snapshot.removed[spell]=GetTime()
+snapshot.cast={}
+snapshot.removed={}
+snapshot.cache={}
+snapshot.Calc=nop
+-- agagou=""
+if select(3,UnitClass("player"))==11 then
+	snapshot.cast={[203242]=0}
+	snapshot.removed={[5215]=0,[145152]=0,[58984]=0}
+	snapshot.cache={[1079]={},[155722]={},[106830]={},[155625]={}}
+	snapshot.cp=0
+	snapshot.Calc=function(_,dest)
+		local cp=UnitPower("player",4)
+		if cp>0 then snapshot.cp=cp else cp=snapshot.cp end
+		if GetTime()-snapshot.cast[203242]<0.05 then cp=5 end--print("ld avant rip, cp=5 /",agagou)
+		
+		local tf,bt,stealth=1,1,1
+		local i,n,id=1
+		n,_,_,_,_,_,_,_,_,id=UnitBuff("player",1)
+		while id do
+			if id==5217 then tf=1.15 end
+			-- if id==52610 then sr=1.15 end
+			if id==145152 then bt=1.25 end
+			if id==102543 or id==5215 or id==58984 then stealth=2 end
+			i=i+1
+			n,_,_,_,_,_,_,_,_,id=UnitBuff("player",i)
 		end
-		local cache=snapshot.cache[spell]
-		if cache then
-			if param=="SPELL_AURA_APPLIED" or param=="SPELL_AURA_REFRESH" then
-				snapshot:Calc()
-				cache[dest]=cache.value
-			elseif param=="SPELL_AURA_REMOVED" then
-				cache[dest]=nil
+		
+		snapshot.cache[1079].valueget=tf*bt
+		snapshot.cache[155722].valueget=tf*bt*stealth
+		snapshot.cache[106830].valueget=tf*bt
+		
+		if GetTime()-snapshot.removed[145152]<0.05 then bt=1.25 end
+		if GetTime()-snapshot.removed[5215]<0.05 or GetTime()-snapshot.removed[58984]<0.05 then stealth=2 end
+
+		snapshot.cache[1079].value=tf*bt*cp/5
+		snapshot.cache[155722].value=tf*bt*stealth
+		snapshot.cache[106830].value=tf*bt
+		snapshot.cache[155625].value=tf
+		
+		if dest then snapshot.cache[1079][dest]=snapshot.cache[1079].value end--print("ld apres rip,",dest,"=",snapshot.cache[1079].value,"/",agagou)
+	end
+	snapshot:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+	snapshot:RegisterEvent("UNIT_AURA")
+	snapshot:RegisterEvent("UNIT_POWER_UPDATE")
+end
+snapshot:SetScript("OnEvent",function(_,event,unit,pw)
+	if event=="UNIT_AURA" and unit=="player" or event=="UNIT_POWER_UPDATE" and unit=="player" and pw=="COMBO_POINTS" then
+		-- agagou="call suite a player/cp"
+		snapshot:Calc()
+	else
+		local _,param,_,src,_,_,_,dest,_,_,_,spell,_,_,_=CombatLogGetCurrentEventInfo()
+		if src==UnitGUID("player") then
+			if snapshot.removed[spell] and param=="SPELL_AURA_REMOVED" then
+				snapshot.removed[spell]=GetTime()
+			end
+			if snapshot.cast[spell] and param=="SPELL_CAST_SUCCESS" then
+				-- print(param,spell)
+				snapshot.cast[spell]=GetTime()
+				-- agagou="call suite a cast"
+				snapshot:Calc(dest)
+			end
+			local cache=snapshot.cache[spell]
+			if cache then
+				if param=="SPELL_AURA_APPLIED" or param=="SPELL_AURA_REFRESH" then
+					-- agagou="call suite a aura"
+					snapshot:Calc()
+					cache[dest]=cache.value
+					-- if spell==1079 then print(dest,"=",cache.value) end
+				elseif param=="SPELL_AURA_REMOVED" then
+					cache[dest]=nil
+				end
 			end
 		end
 	end
 end)
+snapshot:Calc()
 
 -- AURA TRACKER
 
