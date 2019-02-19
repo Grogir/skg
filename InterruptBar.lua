@@ -491,7 +491,8 @@ function InterruptBar:AddArenaSpec(ArenaEnemyCount)
 end
 
 function InterruptBar:UpdateFrame(Frame, SpellId, SpellCD, UnitID)
-	Frame:SetScript("OnEvent",function(_,_,_,Event,_,SourceGUID,SourceName,SourceFlags,_,_,_,_,_,ID)
+	Frame:SetScript("OnEvent",function()
+		_,Event,_,SourceGUID,SourceName,SourceFlags,_,_,_,_,_,ID=CombatLogGetCurrentEventInfo()
 		if(Event=="SPELL_CAST_SUCCESS"and ID==SpellId) then
 	    if bit.band(SourceFlags,0x40)==0x40 then -- 0x40 ==  COMBATLOG_OBJECT_REACTION_HOSTILE
 				local _, InstanceType = IsInInstance()

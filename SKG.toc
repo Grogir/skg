@@ -1,4 +1,4 @@
-## Interface: 80000
+## Interface: 80100
 ## Title: SKG
 ## Author: Grogir & Khujara
 ## Version: 1.00
@@ -27,5 +27,3 @@ DRTracker.lua
 LoseControl.lua
 AuraTracker.lua
 ComboPoints.lua
-
-SandBox.lua

@@ -153,12 +153,14 @@ function Frames:UnitFrames()
 		-- PaladinPowerBarFrame:SetPoint("TOP",PlayerFrame,"BOTTOM",db.runeframex,db.runeframey)
 		-- if db.runeframescale>0 then PaladinPowerBarFrame:SetScale(db.runeframescale) end
 	end
-	PetFrame:ClearAllPoints()
-	if not PetFrame.SetPointNew then PetFrame.SetPointNew=PetFrame.SetPoint PetFrame.SetPoint=nop end
-	PetFrame:SetPointNew("TOPLEFT",PlayerFrame,"TOPLEFT",db.petframex,db.petframey)
-	TotemFrame:ClearAllPoints()
-	if not TotemFrame.SetPointNew then TotemFrame.SetPointNew=TotemFrame.SetPoint TotemFrame.SetPoint=nop end
-	TotemFrame:SetPointNew("TOPLEFT",PlayerFrame,"BOTTOMLEFT",db.totemframex,db.totemframey)
+	-- PetFrame:ClearAllPoints()
+	-- if not PetFrame.SetPointNew then PetFrame.SetPointNew=PetFrame.SetPoint PetFrame.SetPoint=nop end
+	-- PetFrame:SetPointNew("TOPLEFT",PlayerFrame,"TOPLEFT",db.petframex,db.petframey)
+	--:SetUserPlaced(true)
+	--:SetMovable(true)
+	-- TotemFrame:ClearAllPoints()
+	-- if not TotemFrame.SetPointNew then TotemFrame.SetPointNew=TotemFrame.SetPoint TotemFrame.SetPoint=nop end
+	-- TotemFrame:SetPointNew("TOPLEFT",PlayerFrame,"BOTTOMLEFT",db.totemframex,db.totemframey)
 	
 	-- Arena frames
 	local function hbf(f,n)

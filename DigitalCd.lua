@@ -138,8 +138,8 @@ function DigitalCd.Start(cd,start,duration)
 end
 function DigitalCd:AddonLoaded(_,addon)
 	if addon=="Blizzard_PVPUI" then
-		if PVPQueueFrame and PVPQueueFrame.HonorInset and PVPQueueFrame.HonorInset.HonorLevelDisplay then
-			PVPQueueFrame.HonorInset.HonorLevelDisplay.noCooldownCount=true
+		if PVPQueueFrame and PVPQueueFrame.HonorInset and PVPQueueFrame.HonorInset.CasualPanel and PVPQueueFrame.HonorInset.CasualPanel.HonorLevelDisplay then
+			PVPQueueFrame.HonorInset.CasualPanel.HonorLevelDisplay.noCooldownCount=true
 		end
 	end
 end
