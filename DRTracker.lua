@@ -461,31 +461,31 @@ function DRTracker:GetOptions()
 			},
 			disorient={
 				type="toggle",
-				name="Draw Disorients",
+				name="Display Disorients",
 				width="full",
 				order=20
 			},
 			incap={
 				type="toggle",
-				name="Draw Incapacitates",
+				name="Display Incapacitates",
 				width="full",
 				order=21
 			},
 			root={
 				type="toggle",
-				name="Draw Roots",
+				name="Display Roots",
 				width="full",
 				order=22
 			},
 			stun={
 				type="toggle",
-				name="Draw Stuns",
+				name="Display Stuns",
 				width="full",
 				order=23
 			},
 			silence={
 				type="toggle",
-				name="Draw Silences",
+				name="Display Silences",
 				width="full",
 				order=24
 			},

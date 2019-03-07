@@ -169,7 +169,6 @@ local function getter(info)
 	return value
 end
 local function setter(info,value,g,b)
-	print("set",value,g,b)
 	db[info.arg or info[#info]]=(g and b) and {value,g,b} or value
 	DigitalCd:ApplySettings()
 end

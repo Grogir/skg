@@ -55,7 +55,7 @@ snapshot.cast={}
 snapshot.removed={}
 snapshot.cache={}
 snapshot.Calc=nop
--- agagou=""
+
 if select(3,UnitClass("player"))==11 then
 	snapshot.cast={[203242]=0}
 	snapshot.removed={[5215]=0,[145152]=0,[58984]=0}
@@ -64,7 +64,7 @@ if select(3,UnitClass("player"))==11 then
 	snapshot.Calc=function(_,dest)
 		local cp=UnitPower("player",4)
 		if cp>0 then snapshot.cp=cp else cp=snapshot.cp end
-		if GetTime()-snapshot.cast[203242]<0.05 then cp=5 end--print("ld avant rip, cp=5 /",agagou)
+		if GetTime()-snapshot.cast[203242]<0.05 then cp=5 end
 		
 		local tf,bt,stealth=1,1,1
 		local i,n,id=1
@@ -90,7 +90,7 @@ if select(3,UnitClass("player"))==11 then
 		snapshot.cache[106830].value=tf*bt
 		snapshot.cache[155625].value=tf
 		
-		if dest then snapshot.cache[1079][dest]=snapshot.cache[1079].value end--print("ld apres rip,",dest,"=",snapshot.cache[1079].value,"/",agagou)
+		if dest then snapshot.cache[1079][dest]=snapshot.cache[1079].value end
 	end
 	snapshot:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 	snapshot:RegisterEvent("UNIT_AURA")
@@ -107,18 +107,14 @@ snapshot:SetScript("OnEvent",function(_,event,unit,pw)
 				snapshot.removed[spell]=GetTime()
 			end
 			if snapshot.cast[spell] and param=="SPELL_CAST_SUCCESS" then
-				-- print(param,spell)
 				snapshot.cast[spell]=GetTime()
-				-- agagou="call suite a cast"
 				snapshot:Calc(dest)
 			end
 			local cache=snapshot.cache[spell]
 			if cache then
 				if param=="SPELL_AURA_APPLIED" or param=="SPELL_AURA_REFRESH" then
-					-- agagou="call suite a aura"
 					snapshot:Calc()
 					cache[dest]=cache.value
-					-- if spell==1079 then print(dest,"=",cache.value) end
 				elseif param=="SPELL_AURA_REMOVED" then
 					cache[dest]=nil
 				end
@@ -522,6 +518,7 @@ local function NewCond(name,cname)
 			func={
 				type="input",
 				name="Code",
+				desc="Lua code, last line should be a return",
 				multiline=5,
 				width="full",
 				hidden=hiddenifaura,
@@ -757,6 +754,7 @@ local function NewAura(name)
 			loadingcondition={
 				type="input",
 				name="Additionnal loading condition",
+				desc="Lua code, last line should be a return",
 				multiline=3,
 				width="full",
 				order=60

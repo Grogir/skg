@@ -88,21 +88,26 @@ function SimpleTracker:TrinketFrame(i,p)
 	f:SetScript("OnEvent",self.TrinketFilter)
 	f.u="arena"..i
 	-- f.u="target" -- debug
-	f.exp=0
 	return f
 end
-function SimpleTracker.TrinketFilter(f,e,u,_,_,_,id)
+local function cdexp(cd)
+	local s,d=cd:GetCooldownTimes()
+	return (s+d)/1000
+end
+function SimpleTracker.TrinketFilter(f,e,u,_,id)
 	if e=="PLAYER_ENTERING_WORLD" then
 		f:SetShown(db.trinketshown)
 		f.c:SetCooldown(0,0)
 	elseif f.u==u then
 		if id==208683 then
 			f:Show()
-			f.exp=GetTime()+120
 			f.c:SetCooldown(GetTime(),120)
-		elseif (id==7744 or id==59752) and GetTime()+30>f.exp then
+		elseif id==7744 and cdexp(f.c)<GetTime()+30 then
 			f:Show()
 			f.c:SetCooldown(GetTime(),30)
+		elseif id==59752 and cdexp(f.c)<GetTime()+90 then
+			f:Show()
+			f.c:SetCooldown(GetTime(),90)
 		end
 	end
 end
@@ -127,13 +132,13 @@ function SimpleTracker:DispelFrame(i,p)
 	-- f.u="target" -- debug
 	return f
 end
-function SimpleTracker.DispelFilter(f,e,u,_,_,_,id)
+function SimpleTracker.DispelFilter(f,e,u,_,id)
 	if e=="PLAYER_ENTERING_WORLD" then
 		f:SetShown(db.dispelshown)
 		f.c:SetCooldown(0,0)
 	elseif f.u==u then
-		-- 527 priest, 4987 paladin, 77130 shaman, 88423 rdruid, 2782 druid, 475 mage, 115450 monk
-		if id==527 or id==4987 or id==77130 or id==88423 or id==2782 or id==475 or id==115450 then
+		-- 527 priest, 213634 sp, 4987 hpal, 213644 pal, 77130 rsham, 51886 sham, 88423 rdruid, 2782 druid, 475 mage, 115450 hmonk, 218164 monk
+		if id==527 or id==213634 or id==4987 or id==213644 or id==77130 or id==51886 or id==88423 or id==2782 or id==475 or id==115450 or id==218164 then
 			f:Show()
 			f.t:SetTexture(GetSpellTexture(id))
 			f.c:SetCooldown(GetTime(),8)

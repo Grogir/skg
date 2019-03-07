@@ -809,7 +809,7 @@ function Frames:GetOptions()
 					arenatexture={
 						type="toggle",
 						name="Custom Texture",
-						desc="Disabling needs an UI reload",
+						desc="Disabling needs a UI reload",
 						order=5
 					},
 					arenatest={
@@ -973,7 +973,7 @@ function Frames:GetOptions()
 					},
 					disablewhisp={
 						type="toggle",
-						name="Disable Blinking Chat",
+						name="Disable Chat Blinking",
 						order=3
 					},
 					disablechaninv={
