@@ -25,14 +25,14 @@ end
 -- LOSE CONTROL
 
 -- Raid Portrait
--- for i=1,15 do
-	-- local portr=CompactRaidFrameContainer:CreateTexture("RaidMember"..i.."Portrait")
-	-- portr:ClearAllPoints()
-	-- local y=50
-	-- portr:SetSize(y,y)
-	-- portr:SetPoint("TOPRIGHT",CompactRaidFrameContainer,"TOPLEFT",-1,-14-(y*(i-1)))
-	-- portr:SetTexture("Interface\\Glues\\CHARACTERCREATE\\UI-CHARACTERCREATE-CLASSES")
--- end
+for i=1,15 do
+	local portr=CompactRaidFrameContainer:CreateTexture("RaidMember"..i.."Portrait")
+	portr:ClearAllPoints()
+	local y=50
+	portr:SetSize(y,y)
+	portr:SetPoint("TOPRIGHT",CompactRaidFrameContainer,"TOPLEFT",-1,-14-(y*(i-1)))
+	portr:SetTexture("Interface\\Glues\\CHARACTERCREATE\\UI-CHARACTERCREATE-CLASSES")
+end
 function ShowRaidPortrait()
 	local hideall
 	-- if FlowContainer_GetUsedBounds(CompactRaidFrameContainer)>DefaultCompactUnitFrameSetupOptions.width+5 then
@@ -66,7 +66,7 @@ function ShowRaidPortrait()
 				portr:SetTexCoord(unpack(t))
 				if portr.lc then
 					portr.lc:Show()
-					SetPortrait("raid"..i,portr:GetName(),portr.lc)
+					SetPortrait("raid"..i,portr,portr.lc)
 				else
 					portr:Show()
 				end
@@ -94,7 +94,7 @@ function HideRaidPortrait()
         portr:Hide()
     end
 end
--- hooksecurefunc("CompactRaidFrameContainer_LayoutFrames",ShowRaidPortrait)
+hooksecurefunc("CompactRaidFrameContainer_LayoutFrames",ShowRaidPortrait)
 
 local portraitlist={PlayerPortrait="player",TargetFramePortrait="target",FocusFramePortrait="focus",PartyMemberFrame1Portrait="party1",PartyMemberFrame2Portrait="party2",PartyMemberFrame3Portrait="party3",PartyMemberFrame4Portrait="party4",ArenaEnemyFrame1ClassPortrait="arena1",ArenaEnemyFrame2ClassPortrait="arena2",ArenaEnemyFrame3ClassPortrait="arena3",ArenaEnemyFrame4ClassPortrait="arena4",ArenaEnemyFrame5ClassPortrait="arena5",RaidMember1Portrait="raid1",RaidMember2Portrait="raid2",RaidMember3Portrait="raid3",RaidMember4Portrait="raid4",RaidMember5Portrait="raid5",RaidMember6Portrait="raid6",RaidMember7Portrait="raid7",RaidMember8Portrait="raid8",RaidMember9Portrait="raid9",RaidMember10Portrait="raid10",RaidMember11Portrait="raid11",RaidMember12Portrait="raid12",RaidMember13Portrait="raid13",RaidMember14Portrait="raid14",RaidMember15Portrait="raid15"}
 local aurapriority={playerbuff=1,buff=1,debuff=2,root=3,rndroot=3,nodr=4,def=5,aura=6,silence=6,stun=7,rndstun=7,disorient=7,incap=7}
@@ -123,7 +123,7 @@ function AssignPortrait(portrait,icon,lc)
         lc.cd:SetFrameLevel(portrait:GetParent():GetFrameLevel())
         lc.tex:SetAllPoints(portrait)
         portrait:Hide()
-        -- lc.tex:SetTexCoord(0,1,0,1)
+        lc.tex:SetTexCoord(0,1,0,1)----
 		if icon~=lc.tex.lasticon then
 			lc.tex.lasticon=icon
 			if(raidportrait[portrait:GetName()]) then
