@@ -35,6 +35,8 @@ end
 -- DR TRACKER
 
 SpellDatabase={
+-- [774]="buff",
+
 [221527]="disorient", --Emprisonnement
 [206961]="disorient", --Tremblez devant moi
 [217832]="disorient", --Emprisonnement ---------- test dr
@@ -411,7 +413,7 @@ function DRTracker:GetOptions()
 				name="Enable",
 				desc="Enable the module",
 				get=function() return self:IsEnabled() end,
-				set=function(i,v) if v then self:Enable() else self:Disable() end db.enabled=v end,
+				set=function(i,v) db.enabled=v if v then self:Enable() else self:Disable() end end,
 				order=1,
 			},
 			drt={
@@ -437,11 +439,7 @@ function DRTracker:GetOptions()
 				func=Test,
 				order=13
 			},
-			nl1={
-				type="description",
-				name="",
-				order=14
-			},
+			nl1={type="description",name="",order=14},
 			iconsize={
 				type="range",
 				name="Icon Size",
@@ -454,39 +452,34 @@ function DRTracker:GetOptions()
 				min=0,max=1,step=0.1,
 				order=16
 			},
-			nl2={
-				type="description",
-				name="",
-				order=17
-			},
+			nl2={type="description",name="",order=17},
 			disorient={
 				type="toggle",
 				name="Display Disorients",
-				width="full",
 				order=20
 			},
+			nla={type="description",name="",order=20.5},
 			incap={
 				type="toggle",
 				name="Display Incapacitates",
-				width="full",
 				order=21
 			},
+			nlb={type="description",name="",order=21.5},
 			root={
 				type="toggle",
 				name="Display Roots",
-				width="full",
 				order=22
 			},
+			nlc={type="description",name="",order=22.5},
 			stun={
 				type="toggle",
 				name="Display Stuns",
-				width="full",
 				order=23
 			},
+			nld={type="description",name="",order=23.5},
 			silence={
 				type="toggle",
 				name="Display Silences",
-				width="full",
 				order=24
 			},
 		}

@@ -12,6 +12,16 @@ local db
 
 local defaults={global={
 	enabled=true,
+	
+	decimals=true,
+	cdalpha=0.7,
+	
+	player=true,
+	target=true,
+	focus=true,
+	party=true,
+	arena=true,
+	raid=true,
 }}
 
 function LoseControl:OnInitialize()
@@ -24,20 +34,22 @@ end
 
 -- LOSE CONTROL
 
--- Raid Portrait
-for i=1,15 do
-	local portr=CompactRaidFrameContainer:CreateTexture("RaidMember"..i.."Portrait")
-	portr:ClearAllPoints()
-	local y=50
-	portr:SetSize(y,y)
-	portr:SetPoint("TOPRIGHT",CompactRaidFrameContainer,"TOPLEFT",-1,-14-(y*(i-1)))
-	portr:SetTexture("Interface\\Glues\\CHARACTERCREATE\\UI-CHARACTERCREATE-CLASSES")
+local portraitlist={PlayerPortrait="player",TargetFramePortrait="target",FocusFramePortrait="focus",PartyMemberFrame1Portrait="party1",PartyMemberFrame2Portrait="party2",PartyMemberFrame3Portrait="party3",PartyMemberFrame4Portrait="party4",ArenaEnemyFrame1ClassPortrait="arena1",ArenaEnemyFrame2ClassPortrait="arena2",ArenaEnemyFrame3ClassPortrait="arena3",ArenaEnemyFrame4ClassPortrait="arena4",ArenaEnemyFrame5ClassPortrait="arena5",RaidMember1Portrait="raid1",RaidMember2Portrait="raid2",RaidMember3Portrait="raid3",RaidMember4Portrait="raid4",RaidMember5Portrait="raid5",RaidMember6Portrait="raid6",RaidMember7Portrait="raid7",RaidMember8Portrait="raid8",RaidMember9Portrait="raid9",RaidMember10Portrait="raid10",RaidMember11Portrait="raid11",RaidMember12Portrait="raid12",RaidMember13Portrait="raid13",RaidMember14Portrait="raid14",RaidMember15Portrait="raid15"}
+local aurapriority={playerbuff=1,buff=1,debuff=2,root=3,rndroot=3,nodr=4,def=5,aura=6,silence=6,stun=7,rndstun=7,disorient=7,incap=7}
+local portraitsize={player=52,target=52,focus=52,party=32,arena=32,raid=50}
+
+function LoseControl:CreateRaidPortraits()
+    for i=1,15 do
+		local portr=CompactRaidFrameContainer:CreateTexture("RaidMember"..i.."Portrait","BORDER")
+		portr:SetTexture("Interface\\Glues\\CHARACTERCREATE\\UI-CHARACTERCREATE-CLASSES")
+	end
 end
-function ShowRaidPortrait()
+
+function LoseControl:ShowRaidPortrait()
 	local hideall
 	-- if FlowContainer_GetUsedBounds(CompactRaidFrameContainer)>DefaultCompactUnitFrameSetupOptions.width+5 then
-	if GetNumGroupMembers()>5 then
-		hideall=1
+	if GetNumGroupMembers()>5 or not db.enabled or not db.raid then
+		hideall=true
 	end
     for i=1,15 do
         local portr=_G["RaidMember"..i.."Portrait"]
@@ -61,47 +73,26 @@ function ShowRaidPortrait()
 				portr:SetSize(y-1,y-1)
 				portr:SetPoint("TOPRIGHT",member,"TOPLEFT",-1,0)
 
-				local t=CLASS_ICON_TCOORDS[class]
-				portr:SetTexture("Interface\\Glues\\CHARACTERCREATE\\UI-CHARACTERCREATE-CLASSES")
-				portr:SetTexCoord(unpack(t))
-				if portr.lc then
-					portr.lc:Show()
-					SetPortrait("raid"..i,portr,portr.lc)
-				else
-					portr:Show()
-				end
+				portr:SetTexCoord(unpack(CLASS_ICON_TCOORDS[class]))
+				portr.lc:Show()
+				portr.lc.cd:SetSize(y-1,y-1)
+				LoseControl:SetPortrait("raid"..i,portr,portr.lc)
 			else
 				portr:Hide()
-				if portr.lc then
-					portr.lc:Hide()
-					portr.lc.cd:Hide()
-					portr.lc.tex:Hide()
-				end
-			end
-		else
-			portr:Hide()
-			if portr.lc then
 				portr.lc:Hide()
 				portr.lc.cd:Hide()
 				portr.lc.tex:Hide()
 			end
+		else
+			portr:Hide()
+			portr.lc:Hide()
+			portr.lc.cd:Hide()
+			portr.lc.tex:Hide()
 		end
 	end
 end
-function HideRaidPortrait()
-    for i=1,15 do
-        local portr=_G["RaidMember"..i.."Portrait"]
-        portr:Hide()
-    end
-end
-hooksecurefunc("CompactRaidFrameContainer_LayoutFrames",ShowRaidPortrait)
 
-local portraitlist={PlayerPortrait="player",TargetFramePortrait="target",FocusFramePortrait="focus",PartyMemberFrame1Portrait="party1",PartyMemberFrame2Portrait="party2",PartyMemberFrame3Portrait="party3",PartyMemberFrame4Portrait="party4",ArenaEnemyFrame1ClassPortrait="arena1",ArenaEnemyFrame2ClassPortrait="arena2",ArenaEnemyFrame3ClassPortrait="arena3",ArenaEnemyFrame4ClassPortrait="arena4",ArenaEnemyFrame5ClassPortrait="arena5",RaidMember1Portrait="raid1",RaidMember2Portrait="raid2",RaidMember3Portrait="raid3",RaidMember4Portrait="raid4",RaidMember5Portrait="raid5",RaidMember6Portrait="raid6",RaidMember7Portrait="raid7",RaidMember8Portrait="raid8",RaidMember9Portrait="raid9",RaidMember10Portrait="raid10",RaidMember11Portrait="raid11",RaidMember12Portrait="raid12",RaidMember13Portrait="raid13",RaidMember14Portrait="raid14",RaidMember15Portrait="raid15"}
-local aurapriority={playerbuff=1,buff=1,debuff=2,root=3,rndroot=3,nodr=4,def=5,aura=6,silence=6,stun=7,rndstun=7,disorient=7,incap=7}
-local portraitsize={player=56,target=56,focus=56,party1=36,party2=36,party3=36,party4=36,arena1=36,arena2=36,arena3=36,arena4=36,arena5=36,raid1=56,raid2=56,raid3=56,raid4=56,raid5=56,raid6=56,raid7=56,raid8=56,raid9=56,raid10=56,raid11=56,raid12=56,raid13=56,raid14=56,raid15=56}
-local raidportrait={RaidMember1Portrait=1,RaidMember2Portrait=1,RaidMember3Portrait=1,RaidMember4Portrait=1,RaidMember5Portrait=1,RaidMember6Portrait=1,RaidMember7Portrait=1,RaidMember8Portrait=1,RaidMember9Portrait=1,RaidMember10Portrait=1,RaidMember11Portrait=1,RaidMember12Portrait=1,RaidMember13Portrait=1,RaidMember14Portrait=1,RaidMember15Portrait=1}
-
-function CheckAura(unit,AuraFunc,icon,prio,expi,dur)
+function LoseControl:CheckAura(unit,AuraFunc,icon,prio,expi,dur)
 	local i=1
 	local _,newicon,_,_,newdur,newexpi,_,_,_,id=AuraFunc(unit,1)
 	while id do
@@ -117,88 +108,99 @@ function CheckAura(unit,AuraFunc,icon,prio,expi,dur)
 	return icon,prio,expi,dur
 end
 
-function AssignPortrait(portrait,icon,lc)
+function LoseControl:AssignPortrait(portrait,icon,tex)
     if icon then
-        lc.tex:Show()
-        lc.cd:SetFrameLevel(portrait:GetParent():GetFrameLevel())
-        lc.tex:SetAllPoints(portrait)
+        tex:Show()
         portrait:Hide()
-        lc.tex:SetTexCoord(0,1,0,1)----
-		if icon~=lc.tex.lasticon then
-			lc.tex.lasticon=icon
-			if(raidportrait[portrait:GetName()]) then
-				lc.tex:SetTexture(icon)
-				lc.cd:SetSize(lc.tex:GetSize())
+		if icon~=tex.lasticon then
+			tex.lasticon=icon
+			if portrait:GetName():sub(1,4)=="Raid" then
+				tex:SetTexture(icon)
 			else
-				SetPortraitToTexture(lc.tex,icon)
+				SetPortraitToTexture(tex,icon)
 			end
 		end
     else
         portrait:Show()
-        lc.tex:Hide()
+        tex:Hide()
     end
 end
 
-function SetPortrait(unit,portrait,lc)
+function LoseControl:SetPortrait(unit,portrait,lc)
     if UnitName(unit) and lc:IsShown() then
         local prio,expi,dur,icon=0,0,0
-		icon,prio,expi,dur=CheckAura(unit,UnitBuff,icon,prio,expi,dur)
-		icon,prio,expi,dur=CheckAura(unit,UnitDebuff,icon,prio,expi,dur)
+		icon,prio,expi,dur=self:CheckAura(unit,UnitBuff,icon,prio,expi,dur)
+		icon,prio,expi,dur=self:CheckAura(unit,UnitDebuff,icon,prio,expi,dur)
 		if dur then
 			lc.cd:SetCooldown(expi-dur,dur)
 			lc.cd:Show()
 		else
 			lc.cd:Hide()
 		end
-		AssignPortrait(portrait,icon,lc)
+		self:AssignPortrait(portrait,icon,lc.tex)
     end
 end
 
 function LoseControl:OnEnable()
+	if not RaidMember1Portrait then
+		self:CreateRaidPortraits()
+		hooksecurefunc("CompactRaidFrameContainer_LayoutFrames",self.ShowRaidPortrait)
+	end
+	
 	for portraitname,unit in pairs(portraitlist) do
 		local po=_G[portraitname]
 		if po then
 			if not po.lc then
-				local lc=CreateFrame("Frame")
+				local parent=po:GetParent()
+				local s=portraitsize[unit:match("%a+")]
+				local lc=CreateFrame("Frame",nil,parent)
 				po.lc=lc
-				lc.cd=CreateFrame("Cooldown",nil,UIParent,"CooldownFrameTemplate")
-				-- lc.cd:SetDrawEdge(false)
-				lc.cd:SetParent(po:GetParent())
+				
+				lc.tex=parent:CreateTexture(nil,"BORDER")
+				lc.tex:SetAllPoints(po)
+				
+				lc.cd=CreateFrame("Cooldown",nil,parent,"CooldownFrameTemplate")
 				lc.cd:ClearAllPoints()
-				lc.cd:SetPoint("CENTER",po,"CENTER",0,0)
-				lc.cd:SetSize(portraitsize[unit],portraitsize[unit])
-				lc.cd:SetAlpha(0.5)
-				lc.cd.detailedCC=1
-				lc.tex=lc:CreateTexture(nil,"BORDER")
-				lc.tex:SetParent(po:GetParent())
-				lc.tex:ClearAllPoints()
-				lc.tex:SetPoint("CENTER",po,"CENTER",0,0)
-				lc.tex:SetSize(portraitsize[unit],portraitsize[unit])
+				lc.cd:SetPoint("CENTER",po,"CENTER")
+				lc.cd:SetSize(s,s)
+				lc.cd:SetDrawEdge(false)
+				lc.cd:SetReverse(true)
+				lc.cd:SetFrameLevel(parent:GetFrameLevel())
+				
 				lc:RegisterEvent("UNIT_AURA")
 				if unit=="target" then lc:RegisterEvent("PLAYER_TARGET_CHANGED") end
 				if unit=="focus" then lc:RegisterEvent("PLAYER_FOCUS_CHANGED") end
+				lc:SetScript("OnEvent",function(_,e,u) if u==unit or e~="UNIT_AURA" then self:SetPortrait(unit,po,po.lc) end end)
 			end
-			po.lc:SetScript("OnEvent",function(_,e,u) if u==unit or e~="UNIT_AURA" then SetPortrait(unit,po,po.lc) end end)
-			po.lc:Show()
 		end
 	end
+	
+	self:ApplySettings()
 end
 
 function LoseControl:OnDisable()
-	for portraitname,unit in pairs(portraitlist) do
-		local po=_G[portraitname]
-		if po and po.lc then
-			po.lc:SetScript("OnEvent",nop)
-			po.lc:Hide()
-		end
-	end
+	self:ApplySettings()
 end
 
 function LoseControl:ApplySettings()
-	if db.enabled then
-		self:OnDisable()
-		self:OnEnable()
+	for portraitname,unit in pairs(portraitlist) do
+		local po=_G[portraitname]
+		if po and po.lc then
+			po.lc.cd:SetAlpha(db.cdalpha)
+			po.lc.cd.detailedCC=db.decimals
+			
+			local shown=db[unit:match("%a+")] and db.enabled
+			po.lc:SetShown(shown)
+			if shown then
+				self:SetPortrait(unit,po,po.lc)
+			else
+				po.lc.cd:Hide()
+				po.lc.tex:Hide()
+				po:Show()
+			end
+		end
 	end
+	self:ShowRaidPortrait()
 end
 
 -- OPTIONS
@@ -225,13 +227,60 @@ function LoseControl:GetOptions()
 				name="Enable",
 				desc="Enable the module",
 				get=function() return self:IsEnabled() end,
-				set=function(i,v) if v then self:Enable() else self:Disable() end db.enabled=v end,
-				order=1,
+				set=function(i,v) db.enabled=v if v then self:Enable() else self:Disable() end end,
+				order=1
 			},
 			lc={
 				type="header",
 				name="Lose Control",
-				order=10,
+				order=10
+			},
+			cdalpha={
+				type="range",
+				name="Cooldown Alpha",
+				min=0,max=1,step=0.01,bigStep=0.1,
+				order=21
+			},
+			decimals={
+				type="toggle",
+				name="Decimals on Cooldowns",
+				order=22
+			},
+			nl0={type="description",name="",order=30},
+			player={
+				type="toggle",
+				name="Player",
+				order=31
+			},
+			nl1={type="description",name="",order=31.5},
+			target={
+				type="toggle",
+				name="Target",
+				order=32
+			},
+			nl2={type="description",name="",order=32.5},
+			focus={
+				type="toggle",
+				name="Focus",
+				order=33
+			},
+			nl3={type="description",name="",order=33.5},
+			party={
+				type="toggle",
+				name="Party",
+				order=34
+			},
+			nl4={type="description",name="",order=34.5},
+			arena={
+				type="toggle",
+				name="Arena",
+				order=35
+			},
+			nl5={type="description",name="",order=35.5},
+			raid={
+				type="toggle",
+				name="Raid",
+				order=36
 			},
 		}
 	}

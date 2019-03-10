@@ -254,7 +254,7 @@ function SpellAlerter:GetOptions()
 				name="Enable",
 				desc="Enable the module",
 				get=function() return self:IsEnabled() end,
-				set=function(i,v) if v then self:Enable() else self:Disable() end db.enabled=v end,
+				set=function(i,v) db.enabled=v if v then self:Enable() else self:Disable() end end,
 				order=1,
 			},
 			h1={

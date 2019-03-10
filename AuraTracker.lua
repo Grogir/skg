@@ -497,11 +497,7 @@ local function NewCond(name,cname)
 				func=DeleteElement,
 				order=0
 			},
-			nl0={
-				type="description",
-				name="",
-				order=1
-			},
+			nl0={type="description",name="",order=1},
 			type={
 				type="select",
 				name="Condition type",
@@ -624,11 +620,7 @@ local function NewAura(name)
 				arg={number=true},
 				order=12
 			},
-			nl0={
-				type="description",
-				name="",
-				order=15
-			},
+			nl0={type="description",name="",order=15},
 			x={
 				type="range",
 				name="X",
@@ -641,11 +633,7 @@ local function NewAura(name)
 				softMin=-1000,softMax=1000,step=1,bigStep=20,--10
 				order=17
 			},
-			nl1={
-				type="description",
-				name="",
-				order=20
-			},
+			nl1={type="description",name="",order=20},
 			size={
 				type="select",
 				name="Size",
@@ -660,11 +648,7 @@ local function NewAura(name)
 				hidden=function(i) return string.sub(db.auras[i[#i-1]].size or "",3)~="custom" end,
 				order=22
 			},
-			nl2={
-				type="description",
-				name="",
-				order=23
-			},
+			nl2={type="description",name="",order=23},
 			alphaoff={
 				type="select",
 				name="Alpha when inactive",
@@ -679,11 +663,7 @@ local function NewAura(name)
 				hidden=function(i) return string.sub(db.auras[i[#i-1]].alphaoff or "",3)~="custom" end,
 				order=25
 			},
-			nl3={
-				type="description",
-				name="",
-				order=26
-			},
+			nl3={type="description",name="",order=26},
 			alphaon={
 				type="select",
 				name="Alpha when active",
@@ -698,11 +678,7 @@ local function NewAura(name)
 				hidden=function(i) return string.sub(db.auras[i[#i-1]].alphaon or "",3)~="custom" end,
 				order=28
 			},
-			nl4={
-				type="description",
-				name="",
-				order=30
-			},
+			nl4={type="description",name="",order=30},
 			snapshot={
 				type="toggle",
 				name="Track snapshot",
@@ -799,10 +775,10 @@ function AuraTracker:GetOptions()
 						name="Enable",
 						desc="Enable the module.",
 						get=function() return self:IsEnabled() end,
-						set=function(i,v) if v then self:Enable() else self:Disable() end db.enabled=v end,
+						set=function(i,v) db.enabled=v if v then self:Enable() else self:Disable() end end,
 						order=0,
 					},
-					nl0={type="description",name=" ",order=0.1},
+					nl0={type="description",name="",order=0.1},
 					iconsize={
 						type="range",
 						name="Icon Size",
